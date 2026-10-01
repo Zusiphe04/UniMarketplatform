@@ -99,7 +99,6 @@ The long-form homepage introduces the mission first, then guides visitors into c
   </tr>
   <tr>
     <td align="center"><strong>Story-led concept</strong></td>
-    <td align="center"><strong>Platform and values</strong></td>
   </tr>
 </table>
 
