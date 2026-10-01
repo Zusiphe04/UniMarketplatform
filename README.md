@@ -95,7 +95,7 @@ The long-form homepage introduces the mission first, then guides visitors into c
 <table>
   <tr>
     <td width="50%"><img src="docs/screenshots/about-story.png" alt="Story-led Community Store About page"></td>
-    <td width="50%"><img src="docs/screenshots/about.png" alt="Community Store About page explaining values and platform roles"></td>
+    
   </tr>
   <tr>
     <td align="center"><strong>Story-led concept</strong></td>
