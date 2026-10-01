@@ -1,1 +1,1 @@
-# UniMarketplatform
+# Community Store Application
