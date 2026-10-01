@@ -1,0 +1,89 @@
+# 07 - SIMULATED PAYMENTS
+# UniMarket intentionally has one credential-free payment simulation endpoint.
+# It does not accept card numbers, CVV, payment tokens, PayPal tokens, bank passwords, or OTPs.
+# Use the checkout response.id UUIDs, not the human-readable UM-* references.
+# Access tokens expire after 15 minutes; rerun the buyer login in file 01 if needed.
+
+@baseUrl = http://localhost:8080
+@buyerToken = PASTE_BUYER_JWT_HERE
+@lowOrderId = PASTE_TEXTBOOK_PENDING_ORDER_UUID_HERE
+@highReleaseOrderId = PASTE_FIRST_LAPTOP_PENDING_ORDER_UUID_HERE
+@highRefundOrderId = PASTE_SECOND_LAPTOP_PENDING_ORDER_UUID_HERE
+@declinedPaymentId = PASTE_DECLINED_PAYMENT_UUID_HERE
+@successfulPaymentId = PASTE_SUCCESSFUL_PAYMENT_UUID_HERE
+
+### LIST SUPPORTED PAYMENT OPTIONS
+GET {{baseUrl}}/api/v1/payments/options
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### SEED DECLINED SNAPSCAN PAYMENT
+# Copy this response.id into @declinedPaymentId before the detail request below.
+POST {{baseUrl}}/api/v1/payments/simulate
+Authorization: Bearer {{buyerToken}}
+Idempotency-Key: seed-low-declined-{{lowOrderId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "orderId": "{{lowOrderId}}",
+  "paymentOption": "SNAPSCAN",
+  "scenario": "DECLINED"
+}
+
+### RETRY THE SAME TEXTBOOK ORDER SUCCESSFULLY THROUGH PAYFAST
+# Copy this PayFast response.id into @successfulPaymentId before the detail request below.
+POST {{baseUrl}}/api/v1/payments/simulate
+Authorization: Bearer {{buyerToken}}
+Idempotency-Key: seed-low-success-{{lowOrderId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "orderId": "{{lowOrderId}}",
+  "paymentOption": "PAYFAST",
+  "scenario": "SUCCESS"
+}
+
+### SEED FIRST HIGH-VALUE PAYSHAP PAYMENT
+# Successful orders at or above R5000 enter HELD simulated escrow.
+POST {{baseUrl}}/api/v1/payments/simulate
+Authorization: Bearer {{buyerToken}}
+Idempotency-Key: seed-high-release-{{highReleaseOrderId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "orderId": "{{highReleaseOrderId}}",
+  "paymentOption": "PAYSHAP",
+  "scenario": "SUCCESS"
+}
+
+### SEED SECOND HIGH-VALUE VISA PAYMENT
+# VISA is a simulation label only; no card credentials are submitted or stored.
+POST {{baseUrl}}/api/v1/payments/simulate
+Authorization: Bearer {{buyerToken}}
+Idempotency-Key: seed-high-refund-{{highRefundOrderId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "orderId": "{{highRefundOrderId}}",
+  "paymentOption": "VISA",
+  "scenario": "SUCCESS"
+}
+
+### LIST CUSTOMER PAYMENT ATTEMPTS
+GET {{baseUrl}}/api/v1/payments
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### VIEW DECLINED PAYMENT ATTEMPT
+GET {{baseUrl}}/api/v1/payments/{{declinedPaymentId}}
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### VIEW SUCCESSFUL PAYMENT ATTEMPT
+GET {{baseUrl}}/api/v1/payments/{{successfulPaymentId}}
+Authorization: Bearer {{buyerToken}}
+Accept: application/json

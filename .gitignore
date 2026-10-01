@@ -1,0 +1,41 @@
+# IDE and workspace metadata
+.idea/
+.vscode/
+*.iml
+
+# Build outputs and dependencies
+/bin/
+backend/bin/
+backend/build/
+backend/target/
+backend/.gradle/
+frontend/node_modules/
+frontend/dist/
+
+# Generated verification and browser profiles
+frontend/.agents/
+frontend/.kiro-verify/
+
+# Runtime files and uploaded media
+*.log
+hs_err_pid*.log
+replay_pid*.log
+backend/uploads/
+
+# Local secrets and credentials
+.env
+.env.local
+backend/.env
+backend/.env.local
+frontend/.env
+frontend/.env.local
+backend/.local/
+backend/http/http-client.cookies
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Tool-specific local settings
+backend/.idea/
+backend/.vscode/

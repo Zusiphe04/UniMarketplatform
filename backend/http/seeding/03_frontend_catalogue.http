@@ -1,0 +1,1063 @@
+# 03 - FRONTEND CATALOGUE (OPTIONAL FULL PRODUCT SET)
+# Run after 00_frontend_platform_users.http; file 00 must already have approved
+# seller.platform@unimarket.local so the login below returns a JWT containing SELLER.
+# Run requests from top to bottom. IntelliJ HTTP Client handlers automatically capture
+# sellerToken and every product ID in client.global variables for subsequent requests.
+# The image endpoint persists URL metadata only; it does not upload binary files.
+#
+# LOCAL IMAGE REQUIREMENT
+# The Vite frontend at @frontendUrl must be reachable while viewing these listings
+# so the localhost image URLs can render. For a deployed environment, replace
+# @frontendUrl with the public frontend/CDN origin.
+#
+# This file is intentionally not idempotent. Running CREATE twice produces duplicate listings.
+
+@baseUrl = http://localhost:8080
+@frontendUrl = http://localhost:5173
+
+### 00 - LOGIN APPROVED PLATFORM SELLER
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "seller.platform@unimarket.local",
+  "password": "SellerPlatform@12345"
+}
+
+> {%
+    client.test("Approved seller login returned an access token", function () {
+        client.assert(response.body.accessToken, "response.body.accessToken is required");
+    });
+    client.global.set("sellerToken", response.body.accessToken);
+%}
+
+### 01A - CREATE COMPACT BAR FRIDGE
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Compact Bar Fridge",
+  "description": "Energy-saving compact fridge sized for a residence room or shared student flat.",
+  "category": "ROOM_AND_HOME",
+  "condition": "GOOD",
+  "price": 950.00,
+  "quantity": 2,
+  "brand": "Hisense",
+  "model": "Compact bar fridge",
+  "color": "Black and grey",
+  "size": "47 L"
+}
+
+> {%
+    client.test("Compact bar fridge creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("barFridgeId", response.body.id);
+%}
+
+### 01B - ADD COMPACT BAR FRIDGE IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{barFridgeId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/bar-fridge.png",
+  "altText": "Compact black bar fridge for a student room",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 01C - PUBLISH COMPACT BAR FRIDGE
+POST {{baseUrl}}/api/v1/seller/products/{{barFridgeId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 02A - CREATE CALCULUS TEXTBOOK
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Calculus Study Textbook",
+  "description": "Clean and affordable calculus reference for first-year mathematics modules.",
+  "category": "BOOKS",
+  "condition": "GOOD",
+  "price": 180.00,
+  "quantity": 4
+}
+
+> {%
+    client.test("Calculus textbook creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("calculusBookId", response.body.id);
+%}
+
+### 02B - ADD CALCULUS TEXTBOOK IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{calculusBookId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/calculus-textbook.png",
+  "altText": "Calculus textbook for university students",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 02C - PUBLISH CALCULUS TEXTBOOK
+POST {{baseUrl}}/api/v1/seller/products/{{calculusBookId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 03A - CREATE DESIGN PATTERNS HANDBOOK
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Design Patterns Handbook",
+  "description": "Practical software design patterns handbook for computer science students.",
+  "category": "BOOKS",
+  "condition": "LIKE_NEW",
+  "price": 220.00,
+  "quantity": 3
+}
+
+> {%
+    client.test("Design patterns handbook creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("designPatternsBookId", response.body.id);
+%}
+
+### 03B - ADD DESIGN PATTERNS HANDBOOK IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{designPatternsBookId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/design-patterns-textbook.png",
+  "altText": "Software design patterns handbook",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 03C - PUBLISH DESIGN PATTERNS HANDBOOK
+POST {{baseUrl}}/api/v1/seller/products/{{designPatternsBookId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 04A - CREATE FINANCIAL ACCOUNTING TEXTBOOK
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Financial Accounting Textbook",
+  "description": "Student-friendly financial accounting textbook with clear worked examples.",
+  "category": "BOOKS",
+  "condition": "GOOD",
+  "price": 190.00,
+  "quantity": 5
+}
+
+> {%
+    client.test("Financial accounting textbook creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("accountingBookId", response.body.id);
+%}
+
+### 04B - ADD FINANCIAL ACCOUNTING TEXTBOOK IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{accountingBookId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/financial-accounting-textbook.png",
+  "altText": "Financial accounting university textbook",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 04C - PUBLISH FINANCIAL ACCOUNTING TEXTBOOK
+POST {{baseUrl}}/api/v1/seller/products/{{accountingBookId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 05A - CREATE ERGONOMIC STUDY CHAIR
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Ergonomic Study Chair",
+  "description": "Supportive chair for long study sessions, assignments and casual gaming.",
+  "category": "ROOM_AND_HOME",
+  "condition": "GOOD",
+  "price": 850.00,
+  "quantity": 1
+}
+
+> {%
+    client.test("Ergonomic study chair creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("gamingChairId", response.body.id);
+%}
+
+### 05B - ADD ERGONOMIC STUDY CHAIR IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{gamingChairId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/gaming-chair.png",
+  "altText": "Black ergonomic gaming and study chair",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 05C - PUBLISH ERGONOMIC STUDY CHAIR
+POST {{baseUrl}}/api/v1/seller/products/{{gamingChairId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 06A - CREATE HP CELERON STUDENT LAPTOP
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "HP Celeron Student Laptop",
+  "description": "Reliable everyday laptop for lecture notes, research and online classes.",
+  "category": "TECH",
+  "condition": "GOOD",
+  "price": 1800.00,
+  "quantity": 2,
+  "brand": "HP",
+  "model": "Celeron student laptop",
+  "storage": "256 GB SSD",
+  "memory": "8 GB RAM",
+  "processor": "Intel Celeron",
+  "screenSize": "15.6 inches",
+  "color": "Silver"
+}
+
+> {%
+    client.test("HP Celeron student laptop creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("hpLaptopId", response.body.id);
+%}
+
+### 06B - ADD HP CELERON STUDENT LAPTOP IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{hpLaptopId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/hp-celeron-laptop.png",
+  "altText": "HP Celeron laptop for everyday student work",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 06C - PUBLISH HP CELERON STUDENT LAPTOP
+POST {{baseUrl}}/api/v1/seller/products/{{hpLaptopId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 07A - CREATE CAMPUS HYBRID BICYCLE
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Campus Hybrid Bicycle",
+  "description": "Comfortable hybrid bicycle for quick and affordable travel around campus.",
+  "category": "OTHER",
+  "condition": "GOOD",
+  "price": 5340.00,
+  "quantity": 1
+}
+
+> {%
+    client.test("Campus hybrid bicycle creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("bicycleId", response.body.id);
+%}
+
+### 07B - ADD CAMPUS HYBRID BICYCLE IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{bicycleId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/hybrid-bicycle.png",
+  "altText": "Hybrid bicycle suitable for campus travel",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 07C - PUBLISH CAMPUS HYBRID BICYCLE
+POST {{baseUrl}}/api/v1/seller/products/{{bicycleId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 08A - CREATE PRE-OWNED IPHONE 14
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Pre-owned iPhone 14",
+  "description": "Carefully used iPhone with strong battery health and a clean body.",
+  "category": "TECH",
+  "condition": "LIKE_NEW",
+  "price": 5999.00,
+  "quantity": 1,
+  "brand": "Apple",
+  "model": "iPhone 14",
+  "storage": "128 GB",
+  "processor": "A15 Bionic",
+  "screenSize": "6.1 inches",
+  "color": "Midnight"
+}
+
+> {%
+    client.test("Pre-owned iPhone 14 creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("iphoneId", response.body.id);
+%}
+
+### 08B - ADD PRE-OWNED IPHONE 14 IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{iphoneId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/iphone-14.png",
+  "altText": "Pre-owned Apple iPhone 14",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 08C - PUBLISH PRE-OWNED IPHONE 14
+POST {{baseUrl}}/api/v1/seller/products/{{iphoneId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 09A - CREATE JBL PORTABLE SPEAKER
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "JBL Portable Speaker",
+  "description": "Compact Bluetooth speaker for study breaks and residence socials.",
+  "category": "TECH",
+  "condition": "GOOD",
+  "price": 450.00,
+  "quantity": 3
+}
+
+> {%
+    client.test("JBL portable speaker creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("jblSpeakerId", response.body.id);
+%}
+
+### 09B - ADD JBL PORTABLE SPEAKER IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{jblSpeakerId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/jbl-speaker.png",
+  "altText": "JBL portable Bluetooth speaker",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 09C - PUBLISH JBL PORTABLE SPEAKER
+POST {{baseUrl}}/api/v1/seller/products/{{jblSpeakerId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 10A - CREATE FRESH KOTA WITH WORS
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Fresh Kota with Wors",
+  "description": "A filling campus favourite prepared fresh and ready for collection.",
+  "category": "OTHER",
+  "condition": "NEW",
+  "price": 55.00,
+  "quantity": 12
+}
+
+> {%
+    client.test("Fresh kota creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("kotaId", response.body.id);
+%}
+
+### 10B - ADD FRESH KOTA WITH WORS IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{kotaId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/kota-with-wors.png",
+  "altText": "Fresh kota sandwich served with wors",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 10C - PUBLISH FRESH KOTA WITH WORS
+POST {{baseUrl}}/api/v1/seller/products/{{kotaId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 11A - CREATE FOLDABLE LAP DESK
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Foldable Lap Desk",
+  "description": "Compact study surface for a residence room, bed or campus lawn.",
+  "category": "ROOM_AND_HOME",
+  "condition": "LIKE_NEW",
+  "price": 180.00,
+  "quantity": 4
+}
+
+> {%
+    client.test("Foldable lap desk creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("lapDeskId", response.body.id);
+%}
+
+### 11B - ADD FOLDABLE LAP DESK IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{lapDeskId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/lap-desk.png",
+  "altText": "Foldable wooden laptop and study desk",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 11C - PUBLISH FOLDABLE LAP DESK
+POST {{baseUrl}}/api/v1/seller/products/{{lapDeskId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 12A - CREATE MACBOOK AIR M1
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "MacBook Air M1",
+  "description": "Fast and lightweight laptop suited to design, coding and coursework.",
+  "category": "TECH",
+  "condition": "LIKE_NEW",
+  "price": 7500.00,
+  "quantity": 1,
+  "brand": "Apple",
+  "model": "MacBook Air M1",
+  "storage": "256 GB SSD",
+  "memory": "8 GB RAM",
+  "processor": "Apple M1",
+  "screenSize": "13.3 inches",
+  "color": "Silver"
+}
+
+> {%
+    client.test("MacBook Air M1 creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("macbookId", response.body.id);
+%}
+
+### 12B - ADD MACBOOK AIR M1 IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{macbookId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/macbook-air-m1.png",
+  "altText": "Silver Apple MacBook Air M1 laptop",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 12C - PUBLISH MACBOOK AIR M1
+POST {{baseUrl}}/api/v1/seller/products/{{macbookId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 13A - CREATE MECHATRONICS ENGINEERING BOOK
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Mechatronics Engineering Book",
+  "description": "Useful core reference covering control systems, electronics and mechanics.",
+  "category": "BOOKS",
+  "condition": "GOOD",
+  "price": 210.00,
+  "quantity": 2
+}
+
+> {%
+    client.test("Mechatronics engineering book creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("mechatronicsBookId", response.body.id);
+%}
+
+### 13B - ADD MECHATRONICS ENGINEERING BOOK IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{mechatronicsBookId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/mechatronics-textbook.png",
+  "altText": "Mechatronics engineering university textbook",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 13C - PUBLISH MECHATRONICS ENGINEERING BOOK
+POST {{baseUrl}}/api/v1/seller/products/{{mechatronicsBookId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 14A - CREATE NIKE AIR FORCE SNEAKERS
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Nike Air Force Sneakers",
+  "description": "Clean and comfortable everyday sneakers ready for campus wear.",
+  "category": "CLOTHING",
+  "condition": "GOOD",
+  "price": 650.00,
+  "quantity": 1,
+  "brand": "Nike",
+  "color": "White",
+  "size": "UK 7"
+}
+
+> {%
+    client.test("Nike Air Force sneakers creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("nikeShoesId", response.body.id);
+%}
+
+### 14B - ADD NIKE AIR FORCE SNEAKERS IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{nikeShoesId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/nike-air-force.png",
+  "altText": "White Nike Air Force sneakers",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 14C - PUBLISH NIKE AIR FORCE SNEAKERS
+POST {{baseUrl}}/api/v1/seller/products/{{nikeShoesId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 15A - CREATE RECHARGEABLE DESK FAN
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Rechargeable Desk Fan",
+  "description": "Quiet portable fan for warmer days in lectures or residence rooms.",
+  "category": "ROOM_AND_HOME",
+  "condition": "LIKE_NEW",
+  "price": 180.00,
+  "quantity": 6
+}
+
+> {%
+    client.test("Rechargeable desk fan creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("portableFanId", response.body.id);
+%}
+
+### 15B - ADD RECHARGEABLE DESK FAN IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{portableFanId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/portable-fan.png",
+  "altText": "Portable rechargeable student desk fan",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 15C - PUBLISH RECHARGEABLE DESK FAN
+POST {{baseUrl}}/api/v1/seller/products/{{portableFanId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 16A - CREATE COMPACT SHOE STAND
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Compact Shoe Stand",
+  "description": "Space-saving shoe storage that helps keep a student room tidy.",
+  "category": "ROOM_AND_HOME",
+  "condition": "NEW",
+  "price": 220.00,
+  "quantity": 3
+}
+
+> {%
+    client.test("Compact shoe stand creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("shoeStandId", response.body.id);
+%}
+
+### 16B - ADD COMPACT SHOE STAND IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{shoeStandId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/shoe-stand.png",
+  "altText": "Compact multi-level shoe storage stand",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 16C - PUBLISH COMPACT SHOE STAND
+POST {{baseUrl}}/api/v1/seller/products/{{shoeStandId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 17A - CREATE SONY WIRELESS HEADPHONES
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Sony Wireless Headphones",
+  "description": "Comfortable wireless audio for focused study sessions and commuting.",
+  "category": "TECH",
+  "condition": "GOOD",
+  "price": 580.00,
+  "quantity": 2
+}
+
+> {%
+    client.test("Sony wireless headphones creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("sonyHeadphonesId", response.body.id);
+%}
+
+### 17B - ADD SONY WIRELESS HEADPHONES IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{sonyHeadphonesId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/sony-headphones.png",
+  "altText": "Sony wireless over-ear headphones",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 17C - PUBLISH SONY WIRELESS HEADPHONES
+POST {{baseUrl}}/api/v1/seller/products/{{sonyHeadphonesId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 18A - CREATE STUDENT BRAIDING SERVICE
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Student Braiding Service",
+  "description": "Neat protective styling by a trusted student beauty creative near campus.",
+  "category": "SERVICE",
+  "condition": "NOT_APPLICABLE",
+  "price": 350.00,
+  "quantity": 8
+}
+
+> {%
+    client.test("Student braiding service creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("braidingServiceId", response.body.id);
+%}
+
+### 18B - ADD STUDENT BRAIDING SERVICE IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{braidingServiceId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/services/braiding.png",
+  "altText": "Professional protective braided hairstyle",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 18C - PUBLISH STUDENT BRAIDING SERVICE
+POST {{baseUrl}}/api/v1/seller/products/{{braidingServiceId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 19A - CREATE CAMPUS HAIRCUT SERVICE
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Campus Haircut",
+  "description": "Fresh and convenient haircut appointments from a student barber near campus.",
+  "category": "SERVICE",
+  "condition": "NOT_APPLICABLE",
+  "price": 120.00,
+  "quantity": 10
+}
+
+> {%
+    client.test("Campus haircut service creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("haircutServiceId", response.body.id);
+%}
+
+### 19B - ADD CAMPUS HAIRCUT SERVICE IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{haircutServiceId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/services/haircut.png",
+  "altText": "Student receiving a professional haircut",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 19C - PUBLISH CAMPUS HAIRCUT SERVICE
+POST {{baseUrl}}/api/v1/seller/products/{{haircutServiceId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 20A - CREATE NEO MACBOOK
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Neo MacBook",
+  "description": "A well-kept silver MacBook ready for lectures, assignments, coding and everyday campus work.",
+  "category": "TECH",
+  "condition": "GOOD",
+  "price": 8500.00,
+  "quantity": 7,
+  "brand": "Apple",
+  "model": "Neo MacBook",
+  "color": "Silver"
+}
+
+> {%
+    client.test("Neo MacBook creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("neoMacbookId", response.body.id);
+%}
+
+### 20B - ADD NEO MACBOOK IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{neoMacbookId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/neo-macbook.webp",
+  "altText": "Silver Neo MacBook on a wooden desk",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 20C - PUBLISH NEO MACBOOK
+POST {{baseUrl}}/api/v1/seller/products/{{neoMacbookId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 21A - CREATE MACBOOK AIR M5
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "13-inch MacBook Air M5",
+  "description": "A like-new lightweight MacBook Air with responsive performance for study, creative projects and campus life.",
+  "category": "TECH",
+  "condition": "LIKE_NEW",
+  "price": 12500.00,
+  "quantity": 7,
+  "brand": "Apple",
+  "model": "MacBook Air M5",
+  "processor": "Apple M5",
+  "screenSize": "13 inches",
+  "color": "Silver"
+}
+
+> {%
+    client.test("MacBook Air M5 creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("macbookM5Id", response.body.id);
+%}
+
+### 21B - ADD MACBOOK AIR M5 IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{macbookM5Id}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/macbook-air-m5-13-inch.webp",
+  "altText": "Silver 13-inch MacBook Air M5 with an orange display",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 21C - PUBLISH MACBOOK AIR M5
+POST {{baseUrl}}/api/v1/seller/products/{{macbookM5Id}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 22A - CREATE ADIDAS SAMBA SNEAKERS
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Adidas Samba Sneakers",
+  "description": "Pre-owned cream Adidas Samba sneakers with red stripes, clean uppers and plenty of campus wear left.",
+  "category": "CLOTHING",
+  "condition": "GOOD",
+  "price": 700.00,
+  "quantity": 3,
+  "brand": "Adidas",
+  "color": "Cream and red"
+}
+
+> {%
+    client.test("Adidas Samba creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("adidasSambaId", response.body.id);
+%}
+
+### 22B - ADD ADIDAS SAMBA IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{adidasSambaId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/adidas-samba-red-stripe.webp",
+  "altText": "Cream Adidas Samba sneakers with red stripes",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 22C - PUBLISH ADIDAS SAMBA SNEAKERS
+POST {{baseUrl}}/api/v1/seller/products/{{adidasSambaId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 23A - CREATE SUMMER FLORAL DRESS
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Summer Floral Dress",
+  "description": "A gently worn cream floral summer dress with a flowing silhouette for warm campus days and casual occasions.",
+  "category": "CLOTHING",
+  "condition": "GOOD",
+  "price": 300.00,
+  "quantity": 1,
+  "color": "Cream floral"
+}
+
+> {%
+    client.test("Summer floral dress creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("summerDressId", response.body.id);
+%}
+
+### 23B - ADD SUMMER FLORAL DRESS IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{summerDressId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/summer-floral-dress.webp",
+  "altText": "Cream floral summer dress hanging in a student bedroom",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 23C - PUBLISH SUMMER FLORAL DRESS
+POST {{baseUrl}}/api/v1/seller/products/{{summerDressId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 24A - CREATE BLAZER AND TROUSER SET
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Taupe Blazer and Trouser Set",
+  "description": "A smart pre-owned taupe blazer and matching trouser set for presentations, interviews and special occasions.",
+  "category": "CLOTHING",
+  "condition": "GOOD",
+  "price": 850.00,
+  "quantity": 1,
+  "color": "Taupe"
+}
+
+> {%
+    client.test("Blazer and trouser set creation returned an ID", function () {
+        client.assert(response.body.id, "response.body.id is required");
+    });
+    client.global.set("blazerSetId", response.body.id);
+%}
+
+### 24B - ADD BLAZER AND TROUSER SET IMAGE
+POST {{baseUrl}}/api/v1/seller/products/{{blazerSetId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "{{frontendUrl}}/images/products/taupe-blazer-trouser-set.webp",
+  "altText": "Taupe blazer and matching trousers displayed in a bedroom",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### 24C - PUBLISH BLAZER AND TROUSER SET
+POST {{baseUrl}}/api/v1/seller/products/{{blazerSetId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+# Each item returned by the public catalogue should have exactly one `images`
+# entry, and that image entry should report `primary: true`.
+
+### VERIFY FULL PUBLIC CATALOGUE
+GET {{baseUrl}}/api/v1/products?page=0&size=40
+Accept: application/json
+
+### VERIFY BOOKS FILTER
+GET {{baseUrl}}/api/v1/products?page=0&size=20&category=BOOKS
+Accept: application/json
+
+### VERIFY TECH FILTER
+GET {{baseUrl}}/api/v1/products?page=0&size=20&category=TECH
+Accept: application/json
+
+### VERIFY CLOTHING FILTER
+GET {{baseUrl}}/api/v1/products?page=0&size=20&category=CLOTHING
+Accept: application/json
+
+### VERIFY ROOM AND HOME FILTER
+GET {{baseUrl}}/api/v1/products?page=0&size=20&category=ROOM_AND_HOME
+Accept: application/json
+
+### VERIFY SERVICE FILTER
+GET {{baseUrl}}/api/v1/products?page=0&size=20&category=SERVICE
+Accept: application/json
+
+### VERIFY SEARCH
+GET {{baseUrl}}/api/v1/products?page=0&size=20&query=student
+Accept: application/json

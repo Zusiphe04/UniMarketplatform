@@ -1,0 +1,29 @@
+# Evidence-backed South African public-university mailbox policies.
+# code|name|type|active|studentDomain|studentLocalPartPattern|studentExample|studentEnforcement|studentSourceUrl|facultyDomain|facultyExample|facultySourceUrl|checkedOn|unavailableReason
+code|name|type|active|studentDomain|studentLocalPartPattern|studentExample|studentEnforcement|studentSourceUrl|facultyDomain|facultyExample|facultySourceUrl|checkedOn|unavailableReason
+CPUT|Cape Peninsula University of Technology|UNIVERSITY_OF_TECHNOLOGY|true|mycput.ac.za|[0-9]{9}|242378726@mycput.ac.za|STRICT_PATTERN|https://www.cput.ac.za/|cput.ac.za|name@cput.ac.za|https://www.cput.ac.za/|2026-09-08|
+CUT|Central University of Technology|UNIVERSITY_OF_TECHNOLOGY|false||||||||||Official student mailbox format has not been confirmed yet.
+DUT|Durban University of Technology|UNIVERSITY_OF_TECHNOLOGY|true|dut4life.ac.za|[0-9]{8}|20612345@dut4life.ac.za|STRICT_PATTERN|https://www.dut.ac.za/wp-content/uploads/handbooks_2023/IT%20Services%20Student%20Guide.pdf|dut.ac.za|name@dut.ac.za|https://www.dut.ac.za/|2026-09-08|
+MUT|Mangosuthu University of Technology|UNIVERSITY_OF_TECHNOLOGY|false||||||||||Official student mailbox format has not been confirmed yet.
+NMU|Nelson Mandela University|UNIVERSITY|true|mandela.ac.za|s[0-9]{9}|s123456789@mandela.ac.za|STRICT_PATTERN|https://www.mandela.ac.za/Student-mail|mandela.ac.za|name@mandela.ac.za|https://www.mandela.ac.za/|2026-09-08|
+NWU|North-West University|UNIVERSITY|true|mynwu.ac.za|[0-9]{8}|12345678@mynwu.ac.za|STRICT_PATTERN|https://studies.nwu.ac.za/sites/studies.nwu.ac.za/files/files/Student/2026_setup_your_NWU_email_account1.pdf|nwu.ac.za|name@nwu.ac.za|https://www.nwu.ac.za/|2026-09-08|
+RU|Rhodes University|UNIVERSITY|true|campus.ru.ac.za||studentnumber@campus.ru.ac.za|DOMAIN_ONLY|https://www.ru.ac.za/registrar/|ru.ac.za|name@ru.ac.za|https://www.ru.ac.za/|2026-09-08|
+SMU|Sefako Makgatho Health Sciences University|UNIVERSITY|false||||||||||Official student mailbox format has not been confirmed yet.
+SPU|Sol Plaatje University|UNIVERSITY|false||||||||||Official student mailbox format has not been confirmed yet.
+SU|Stellenbosch University|UNIVERSITY|true|sun.ac.za|[0-9]{8}|23749970@sun.ac.za|STRICT_PATTERN|https://files.su.ac.za/public/economic-and-management-sciences/documents/2025-09/emsemailprotocol-eng-afrv4-11dec2023.pdf|sun.ac.za|name@sun.ac.za|https://www.sun.ac.za/|2026-09-08|
+TUT|Tshwane University of Technology|UNIVERSITY_OF_TECHNOLOGY|false||||||||||Official student mailbox format has not been confirmed yet.
+UCT|University of Cape Town|UNIVERSITY|true|myuct.ac.za||studentnumber@myuct.ac.za|DOMAIN_ONLY|https://icts.uct.ac.za/services-student-computing/email-students|uct.ac.za|name@uct.ac.za|https://www.uct.ac.za/|2026-09-08|
+UFH|University of Fort Hare|UNIVERSITY|false||||||||||Official student mailbox format has not been confirmed yet.
+UJ|University of Johannesburg|UNIVERSITY|false||||||||||Official student mailbox format has not been confirmed yet.
+UKZN|University of KwaZulu-Natal|UNIVERSITY|true|stu.ukzn.ac.za|[0-9]{9}|998765432@stu.ukzn.ac.za|STRICT_PATTERN|https://my.ukzn.ac.za/|ukzn.ac.za|name@ukzn.ac.za|https://www.ukzn.ac.za/|2026-09-08|
+UL|University of Limpopo|UNIVERSITY|false||||||||||Official student mailbox format has not been confirmed yet.
+UMP|University of Mpumalanga|UNIVERSITY|false||||||||||Official student mailbox format has not been confirmed yet.
+UP|University of Pretoria|UNIVERSITY|true|tuks.co.za|u[0-9]{8}|u12345678@tuks.co.za|STRICT_PATTERN|https://drupalwebprod-files.up.ac.za/Public/media/290/documents/inline/2862574/tuks-gmail-account-guide_feb-2020.zp188487.pdf|up.ac.za|name@up.ac.za|https://www.up.ac.za/|2026-09-08|
+UNISA|University of South Africa|UNIVERSITY|true|mylife.unisa.ac.za|[0-9]{8}|00112233@mylife.unisa.ac.za|STRICT_PATTERN|https://mooc.unisa.ac.za/pluginfile.php/2093355/mod_folder/content/0/2025%20LOG%20IN%20STEPS%20-%20SOCIAL%20WORK%20BSW%20ADMISSION%20TEST.pdf|unisa.ac.za|name@unisa.ac.za|https://www.unisa.ac.za/|2026-09-08|
+UFS|University of the Free State|UNIVERSITY|true|ufs4life.ac.za|[0-9]{10}|2001234567@ufs4life.ac.za|STRICT_PATTERN|https://www.ufs.ac.za/docs/librariesprovider24/2026-pg-docs/ufs4life-email-address-guide-(new).pdf|ufs.ac.za|name@ufs.ac.za|https://www.ufs.ac.za/|2026-09-08|
+UWC|University of the Western Cape|UNIVERSITY|true|myuwc.ac.za|[0-9]{7}|3614275@myuwc.ac.za|STRICT_PATTERN|https://uwcscholar.uwc.ac.za/bitstreams/7b66f128-f84f-4879-8878-3bfb30c57239/download|uwc.ac.za|name@uwc.ac.za|https://www.uwc.ac.za/|2026-09-08|
+UNIVEN|University of Venda|UNIVERSITY|false||||||||||Official student mailbox format has not been confirmed yet.
+WITS|University of the Witwatersrand|UNIVERSITY|true|students.wits.ac.za||studentnumber@students.wits.ac.za|DOMAIN_ONLY|https://students.wits.ac.za/|wits.ac.za|name@wits.ac.za|https://www.wits.ac.za/|2026-09-08|
+UNIZULU|University of Zululand|UNIVERSITY|false||||||||||Official student mailbox format has not been confirmed yet.
+VUT|Vaal University of Technology|UNIVERSITY_OF_TECHNOLOGY|false||||||||||Official student mailbox format has not been confirmed yet.
+WSU|Walter Sisulu University|UNIVERSITY|false||||||||||Official student mailbox format has not been confirmed yet.

@@ -1,0 +1,61 @@
+# 09 - HIGH-VALUE SIMULATED ESCROW
+# Both laptop orders must already be successfully paid and HELD by 07_payments.http.
+# The first order demonstrates buyer release. The second demonstrates dispute and moderator refund.
+# Access tokens expire after 15 minutes; rerun buyer/admin logins in file 01 if needed.
+
+@baseUrl = http://localhost:8080
+@buyerToken = PASTE_BUYER_JWT_HERE
+@adminToken = PASTE_ADMIN_JWT_HERE
+@highReleaseOrderId = PASTE_FIRST_LAPTOP_HELD_ORDER_UUID_HERE
+@highRefundOrderId = PASTE_SECOND_LAPTOP_HELD_ORDER_UUID_HERE
+
+### VIEW FIRST HELD ESCROW
+GET {{baseUrl}}/api/v1/escrow/orders/{{highReleaseOrderId}}
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### CONFIRM RECEIPT AND RELEASE FIRST ESCROW
+POST {{baseUrl}}/api/v1/escrow/orders/{{highReleaseOrderId}}/confirm-receipt
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### VIEW SECOND HELD ESCROW
+GET {{baseUrl}}/api/v1/escrow/orders/{{highRefundOrderId}}
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### OPEN DISPUTE ON SECOND ESCROW
+POST {{baseUrl}}/api/v1/escrow/orders/{{highRefundOrderId}}/disputes
+Authorization: Bearer {{buyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "reason": "The delivered laptop condition requires moderator review in this academic refund scenario."
+}
+
+### MODERATOR LISTS OPEN ESCROW DISPUTES
+GET {{baseUrl}}/api/v1/moderation/escrow/disputes?page=0&size=20
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### MODERATOR RESOLVES SECOND ESCROW WITH SIMULATED REFUND
+POST {{baseUrl}}/api/v1/moderation/escrow/orders/{{highRefundOrderId}}/resolve
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "resolution": "REFUND",
+  "note": "Academic seed dispute resolved with a simulated refund; no real funds moved and inventory is not restocked."
+}
+
+### VIEW FINAL REFUNDED ESCROW
+GET {{baseUrl}}/api/v1/escrow/orders/{{highRefundOrderId}}
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### LIST FINAL CUSTOMER ORDERS
+GET {{baseUrl}}/api/v1/orders
+Authorization: Bearer {{buyerToken}}
+Accept: application/json

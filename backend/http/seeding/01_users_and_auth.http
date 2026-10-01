@@ -1,0 +1,227 @@
+# 01 - USERS, LOGIN, PROFILES, AND PERSONAS
+# Run against a fresh local database. Registration emails are unique.
+# After each login, copy response.accessToken into the matching variable below.
+# Copy each registration response.accountId for later files when requested.
+
+@baseUrl = http://localhost:8080
+@adminToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiMjI3YzVlNS1lZGNlLTQ1YzctOThmYy01ZjVjYzU1MDgxYmYiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4MTg1MDQ2LCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiLCJTRUxMRVIiLCJNT0RFUkFUT1IiLCJBRE1JTiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJleHAiOjE3ODgxODU5NDYsImlhdCI6MTc4ODE4NTA0NiwianRpIjoiZDI4NzUxNmMtMTI2Yy00Y2ZjLTkzMTItOWRmMmQ2MDI2MTE5Iiwic2lkIjoiMzc0OThkYTAtMThhOC00OWZkLWFlNmEtZjcwYjI0MmYzYTM4In0.BvVVjwEGBW2Uay9oFA9Fn3lrmx6uO5LSNu64Zq-QwOo
+@sellerToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZWMzYWExNC0wNDFlLTQ0OGItYWI3OS0zNzcwZDliN2UyMjUiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4MTg1MTY0LCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4MTg2MDY0LCJpYXQiOjE3ODgxODUxNjQsImp0aSI6IjYyMTcyMGE4LWJlYjMtNGRmMC1hMWM2LTk3YTE5OGVlYTMxYiIsInNpZCI6ImVhMTI0MGZjLTcyNDItNGMwMC04MjgyLTg0MGM2ZWI4OTMwZSJ9.WrfcV71fUef_8AnmpqSlSw7aA8ANyOo9oiigBFdEUXM
+@studentToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlZTYyY2Y5ZS1kM2MxLTQ5ZWItYjAzZi0xMmEwMTU0M2VjNzUiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4MTg1MzgyLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4MTg2MjgyLCJpYXQiOjE3ODgxODUzODIsImp0aSI6IjZmY2QzNmY5LTc1ZmYtNGQ2MC1iZDlhLWZiMGZmOTMyZmFiNyIsInNpZCI6IjRiNjNiMjE5LTliY2QtNDYzMS1hYWRhLTk0MTk5Y2RjODU2NyJ9.ebIN_ToB2ddt28e80KHluhZkP_nPEUcXlNFh4Dxzq8A
+@facultyToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiZTM3YjA1NC1jYzRmLTRkZTUtODg0Yi1iOWNlMTcyZjQzZWIiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4MTg1NTI0LCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4MTg2NDI0LCJpYXQiOjE3ODgxODU1MjQsImp0aSI6IjU5OGEwNjI3LTYxYmQtNGYxZC1iY2FlLTUwMzM5OTkxMzk4MSIsInNpZCI6IjMyN2YyYzg5LTY2NDktNGU2OC1iMDg3LTUxMzJkMDhmZWMzYyJ9.YITE8cnZJfqkFvUYvLJYuVuN6MPWtlfkpDw5wo740Bo
+@residentToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzOGYxMmQwMy0wNWY2LTQ4MTQtOTQ3MC0wYzgxNjM4ZjZmNTciLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4MTg1NjIzLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4MTg2NTIzLCJpYXQiOjE3ODgxODU2MjMsImp0aSI6IjBkNjI5NjhmLTdhZWItNGNiNS04NDQ0LWVkZjZmMTI5ZTQyYSIsInNpZCI6IjNlMTg5MDAyLTRhMTUtNGM4Ni04MTgyLTUxNmNhOGVmNDMwMiJ9.yAI8Q5dUwLbzV4c_0tuZdI3Ygg-qhHIEIOwp0iyycgs
+@buyerToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyYjM5NzhlNC02MTZiLTRlYTgtODFjNS0yM2IzYTk3ZTY5ZmUiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4MTg2MTkzLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4MTg3MDkzLCJpYXQiOjE3ODgxODYxOTMsImp0aSI6ImRhZjkwNzczLTFmMjMtNGUzOC05MmEwLTM0NGFmNjIxZjNiYiIsInNpZCI6ImIwNTllMWNkLTRmMjYtNDRiNi1hZTk3LTczNjAzZjU4MzQ1ZSJ9.OuV5_z58Ewa13D_0uHtSwa2PEi1mp-HvPbVVfnX0EU0
+
+### LOGIN BOOTSTRAP ADMINISTRATOR
+# The administrator must first be enabled through the startup bootstrap documented in SEEDING.md.
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "admin.seed@unimarket.local",
+  "password": "AdminSeed@12345"
+}
+
+### CHECK ADMINISTRATOR ACCOUNT
+GET {{baseUrl}}/api/v1/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZTNmYTE0MC1iNGU5LTRiOTEtODU0NC03MWYzYTM2YzkwNzMiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgwMTMwLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiLCJTRUxMRVIiLCJNT0RFUkFUT1IiLCJBRE1JTiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJleHAiOjE3ODg4ODEwMzAsImlhdCI6MTc4ODg4MDEzMCwianRpIjoiMGViMjdkM2UtYTVlMi00NWY2LTkwNzItZTZjZTdiOWM2MmY1Iiwic2lkIjoiZDljNjMwZGUtYWY2NC00NzY0LTkwYzctNDE5MGM1NTk0NWNmIn0.l2wMt-5aKJUTEnA1n1X30xKzSCyLr0MtLOj3M81Om9g
+Accept: application/json
+
+### REGISTER FUTURE SELLER
+# Copy response.accountId into @sellerAccountId in 02_vendor_approval.http.
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "seller.seed@unimarket.local",
+  "password": "SellerSeed@12345",
+  "firstName": "Lerato",
+  "lastName": "Mokoena",
+  "displayName": "Campus Technology and Books",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true
+}
+
+### LOGIN FUTURE SELLER BEFORE APPROVAL
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "seller.seed@unimarket.local",
+  "password": "SellerSeed@12345"
+}
+
+### UPDATE SELLER PROFILE
+PUT {{baseUrl}}/api/v1/account/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhOTJlYzJjZi0yYTkwLTQzMTQtYTg1NS0yZjk2Zjk0ZjQwOGEiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgwMjQyLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODgxMTQyLCJpYXQiOjE3ODg4ODAyNDIsImp0aSI6ImNlMzgyZDllLTBiOGUtNGJiMi1hODYzLTk4YmRmMzYwNWYwZCIsInNpZCI6IjIyMjM3MTIzLWIzZmMtNDI1MS04YzI1LTVmNmY5ZmIwODJiMSJ9.IQsTFsJJmaxbafjRdBEHzqHUiXAsjEwAfTIBSdG4BQs
+Content-Type: application/json
+Accept: application/json
+
+{
+  "displayName": "Campus Technology and Books",
+  "phoneNumber": "+27821234567",
+  "bio": "Academic marketplace seller offering textbooks and student technology in Cape Town."
+}
+
+### DECLARE SELLER RESIDENT PERSONA
+POST {{baseUrl}}/api/v1/account/personas
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhOTJlYzJjZi0yYTkwLTQzMTQtYTg1NS0yZjk2Zjk0ZjQwOGEiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgwMjQyLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODgxMTQyLCJpYXQiOjE3ODg4ODAyNDIsImp0aSI6ImNlMzgyZDllLTBiOGUtNGJiMi1hODYzLTk4YmRmMzYwNWYwZCIsInNpZCI6IjIyMjM3MTIzLWIzZmMtNDI1MS04YzI1LTVmNmY5ZmIwODJiMSJ9.IQsTFsJJmaxbafjRdBEHzqHUiXAsjEwAfTIBSdG4BQs
+Content-Type: application/json
+Accept: application/json
+
+{
+  "persona": "RESIDENT",
+  "organizationName": null
+}
+
+### REGISTER STUDENT
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "240000001@mycput.ac.za",
+  "password": "StudentSeed@12345",
+  "firstName": "Naledi",
+  "lastName": "Khumalo",
+  "displayName": "Naledi the Student",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true
+}
+
+### LOGIN STUDENT
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "240000001@mycput.ac.za",
+  "password": "StudentSeed@12345"
+}
+
+### DECLARE VERIFIED STUDENT PERSONA
+POST {{baseUrl}}/api/v1/account/personas
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0NGVlMjVjMy1mY2JjLTQ5OGEtODUwNC1kYjNlNGIyMzY2ODMiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgwMzI2LCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODgxMjI2LCJpYXQiOjE3ODg4ODAzMjYsImp0aSI6IjkyN2MxNGZkLTM0ZGYtNDEyMC05MTA0LWY4MjU0YjRmMjMwNSIsInNpZCI6IjdiY2Q2Y2VhLTRkNmUtNGM3NC04ZGNlLWJhYWFmY2NhZDk3ZiJ9.aVS6whPOeOCLwTx5GiQ31immrm9I7wTDHYdymE71V8E
+Content-Type: application/json
+Accept: application/json
+
+{
+  "persona": "STUDENT",
+  "organizationName": "Cape Peninsula University of Technology"
+}
+
+### REGISTER FACULTY MEMBER
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "faculty.seed@cput.ac.za",
+  "password": "FacultySeed@12345",
+  "firstName": "Thabo",
+  "lastName": "Jacobs",
+  "displayName": "Dr Thabo Jacobs",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true
+}
+
+### LOGIN FACULTY MEMBER
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "faculty.seed@cput.ac.za",
+  "password": "FacultySeed@12345"
+}
+
+### DECLARE VERIFIED FACULTY PERSONA
+POST {{baseUrl}}/api/v1/account/personas
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0ODgwMWQ3NS05MTZiLTQ0NmItOWU3MC02ZWY0YjA2Y2U2YTgiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgwMzgzLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODgxMjgzLCJpYXQiOjE3ODg4ODAzODMsImp0aSI6ImRkYjliNTMyLWI4NDUtNGFiYi05MjVkLWQ5NzJkNDdjYmFlOSIsInNpZCI6IjVmODFiNGQwLTU1NjgtNDJjMi1hN2QwLTcyZDU4NjdlMWNlMiJ9.eO73Li781MDY0iYvn79afwCgn5JotYGseqwCNzmvJtY
+Content-Type: application/json
+Accept: application/json
+
+{
+  "persona": "FACULTY",
+  "organizationName": "Cape Peninsula University of Technology"
+}
+
+### REGISTER RESIDENT AND EVENT ORGANIZER
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "resident.seed@unimarket.local",
+  "password": "ResidentSeed@12345",
+  "firstName": "Amina",
+  "lastName": "Davids",
+  "displayName": "Campus Event Organizer",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true
+}
+
+### LOGIN RESIDENT
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "resident.seed@unimarket.local",
+  "password": "ResidentSeed@12345"
+}
+
+### DECLARE RESIDENT PERSONA
+POST {{baseUrl}}/api/v1/account/personas
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzNjZmMmMzMS0wNDYxLTQ4ZjktYWNjYi0yNmNlNDNlODkyMTkiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgwNDc0LCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODgxMzc0LCJpYXQiOjE3ODg4ODA0NzQsImp0aSI6IjQwNDg4ZmVjLTk3NzYtNDNmZS1hNWZlLTVlY2E5ZmQxNDIwNCIsInNpZCI6ImNlNzAyNTQwLWQ0MzEtNDkzMi1hZWU5LWI0NGMzNDU3MDdlNSJ9.UV944bWXJjI8NOxFNp60HZzbHhuRUc1RbwIWr-UGhKE
+Content-Type: application/json
+Accept: application/json
+
+{
+  "persona": "RESIDENT",
+  "organizationName": null
+}
+
+### REGISTER CUSTOMER
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "buyer.seed@unimarket.local",
+  "password": "BuyerSeed@12345",
+  "firstName": "Tiyani",
+  "lastName": "Baloyi",
+  "displayName": "Tiyani Academic Buyer",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true
+}
+
+### LOGIN CUSTOMER
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "buyer.seed@unimarket.local",
+  "password": "BuyerSeed@12345"
+}
+
+### UPDATE CUSTOMER PROFILE
+PUT {{baseUrl}}/api/v1/account/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1NzM0MTAxMS01NzdjLTRkNDAtOGIxNy04NDdmMzFmM2Y4N2UiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgwNTM0LCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODgxNDM0LCJpYXQiOjE3ODg4ODA1MzQsImp0aSI6IjZhNmI3NDlkLWNlN2QtNGVkOC04Njk2LThmMmYyZTVhZDcxYiIsInNpZCI6ImI4MmE0YTI4LWQ2ZGQtNDMxYi04YmI1LWM3YTllMjRhYjBlMSJ9.IyANLzdOdCqsVaviGwihb14Ybn15eRFEndZR_IpSDn4
+Content-Type: application/json
+Accept: application/json
+
+{
+  "displayName": "Tiyani Academic Buyer",
+  "phoneNumber": "+27646320874",
+  "bio": "Academic customer using campus pickup and local delivery workflows."
+}
+
+### CHECK CUSTOMER ACCOUNT
+GET {{baseUrl}}/api/v1/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1NzM0MTAxMS01NzdjLTRkNDAtOGIxNy04NDdmMzFmM2Y4N2UiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgwNTM0LCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODgxNDM0LCJpYXQiOjE3ODg4ODA1MzQsImp0aSI6IjZhNmI3NDlkLWNlN2QtNGVkOC04Njk2LThmMmYyZTVhZDcxYiIsInNpZCI6ImI4MmE0YTI4LWQ2ZGQtNDMxYi04YmI1LWM3YTllMjRhYjBlMSJ9.IyANLzdOdCqsVaviGwihb14Ybn15eRFEndZR_IpSDn4
+Accept: application/json

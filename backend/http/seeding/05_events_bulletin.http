@@ -1,0 +1,31 @@
+# 05 - COMMUNITY EVENT AND BULLETIN
+# Run with the resident token from 01_users_and_auth.http.
+# Access tokens expire after 15 minutes; rerun the resident login in file 01 if needed.
+
+@baseUrl = http://localhost:8080
+@residentToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzNjZmMmMzMS0wNDYxLTQ4ZjktYWNjYi0yNmNlNDNlODkyMTkiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODg5NDMwLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODkwMzMwLCJpYXQiOjE3ODg4ODk0MzAsImp0aSI6ImI2YzA4YTRjLWY4YTUtNDEyZS1iZTg3LTRiM2MxNTlhMDNmMCIsInNpZCI6IjkzYzY0NzM5LTEwNDAtNDY5Ni1iNGJhLTc0NmYzZGQxMzQ5YSJ9.AozhZ9LQPEjf-D4aNzV4yDiYmcO24AeAhamcMLhZZqU
+@eventId = PASTE_EVENT_UUID_HERE
+
+### PUBLISH CAMPUS EVENT
+POST {{baseUrl}}/api/v1/bulletin
+Authorization: Bearer {{residentToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "type": "EVENT",
+  "title": "UniMarket Campus Exchange Day 2026",
+  "content": "Students, faculty, residents, buyers, and sellers can exchange books and technology safely.",
+  "location": "CPUT District Six Campus Student Centre",
+  "eventStartsAt": "2026-10-12T10:00:00Z",
+  "expiresAt": "2026-10-12T16:00:00Z",
+  "publishNow": true
+}
+
+### LIST PUBLIC EVENTS
+GET {{baseUrl}}/api/v1/bulletin?type=EVENT&page=0&size=20
+Accept: application/json
+
+### VIEW PUBLIC EVENT
+GET {{baseUrl}}/api/v1/bulletin/{{eventId}}
+Accept: application/json

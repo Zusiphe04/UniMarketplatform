@@ -1,0 +1,51 @@
+# 04 - SUSPICIOUS-ACTIVITY REPORT AND MODERATION
+# Run this file after publishing products and BEFORE paying both laptop orders.
+# The high-value product must still be publicly reportable.
+# Access tokens expire after 15 minutes; rerun buyer/admin logins in file 01 if needed.
+
+@baseUrl = http://localhost:8080
+@buyerToken = PASTE_BUYER_JWT_HERE
+@adminToken = PASTE_ADMIN_JWT_HERE
+@highProductId = PASTE_LAPTOP_PRODUCT_UUID_HERE
+@reportId = PASTE_REPORT_UUID_HERE
+
+### REPORT THE HIGH-VALUE PRODUCT
+POST {{baseUrl}}/api/v1/reports
+Authorization: Bearer {{buyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "targetType": "PRODUCT",
+  "targetId": "{{highProductId}}",
+  "reason": "SUSPICIOUS_ACTIVITY",
+  "details": "Academic seed report verifying product evidence snapshots, reporter ownership, and moderation review."
+}
+
+### LIST REPORTER'S OWN REPORTS
+GET {{baseUrl}}/api/v1/reports/mine?page=0&size=20
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### OPEN MODERATION QUEUE
+GET {{baseUrl}}/api/v1/moderation/reports?status=OPEN&page=0&size=20
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ESCALATE AND RESOLVE REPORT
+PATCH {{baseUrl}}/api/v1/moderation/reports/{{reportId}}/resolve
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "resolution": "ESCALATED",
+  "action": "ESCALATED",
+  "note": "Escalated for manual academic review; no automatic product mutation was performed.",
+  "reporterMessage": "Your suspicious-activity report was reviewed and escalated for manual investigation."
+}
+
+### REPORTER READS FINAL RESOLUTION
+GET {{baseUrl}}/api/v1/reports/{{reportId}}
+Authorization: Bearer {{buyerToken}}
+Accept: application/json

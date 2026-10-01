@@ -1,0 +1,44 @@
+target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+
+### VS Code ###
+.vscode/
+
+# Uploaded media is generated locally and must not be committed.
+uploads/
+
+### Local development secrets ###
+.local/
+http/http-client.cookies
+*.p12
+*.pfx
+*.jks
+*.keystore
+.env
+.env.local

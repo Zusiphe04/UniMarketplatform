@@ -1,0 +1,39 @@
+# 08 - VERIFIED REVIEW AND SELLER FEEDBACK
+# Run after the textbook order is PAID in 07_payments.http.
+# Access tokens expire after 15 minutes; rerun buyer login in file 01 and seller login in file 02 if needed.
+
+@baseUrl = http://localhost:8080
+@buyerToken = PASTE_BUYER_JWT_HERE
+@sellerToken = PASTE_POST_APPROVAL_SELLER_JWT_HERE
+@lowProductId = PASTE_TEXTBOOK_PRODUCT_UUID_HERE
+@reviewId = PASTE_REVIEW_UUID_HERE
+
+### CREATE VERIFIED-PURCHASE REVIEW
+POST {{baseUrl}}/api/v1/reviews
+Authorization: Bearer {{buyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": "{{lowProductId}}",
+  "rating": 5,
+  "comment": "The textbook matched its description and the campus pickup workflow was clear."
+}
+
+### LIST PUBLIC PRODUCT REVIEWS
+GET {{baseUrl}}/api/v1/reviews/products/{{lowProductId}}?page=0&size=20
+Accept: application/json
+
+### VIEW PUBLIC REVIEW SUMMARY
+GET {{baseUrl}}/api/v1/reviews/products/{{lowProductId}}/summary
+Accept: application/json
+
+### PRODUCT OWNER RESPONDS TO REVIEW
+POST {{baseUrl}}/api/v1/reviews/{{reviewId}}/response
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "response": "Thank you for the feedback. We are glad the textbook and pickup process met your expectations."
+}

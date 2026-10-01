@@ -1,0 +1,473 @@
+# 00 - FRONTEND PLATFORM USERS AND MULTI-ROLE ACCESS
+# Creates database-backed accounts for every frontend role/persona used by the platform.
+# Run against a fresh local database after enabling the bootstrap administrator.
+#
+# IMPORTANT
+# - This file uses the real REST API; every successful write is persisted by Spring/JPA.
+# - It is intentionally not idempotent because account emails are unique.
+# - Run requests from top to bottom in IntelliJ HTTP Client; required tokens and account IDs are captured automatically.
+# - Keep the requests in one IntelliJ session so client.global values remain available to later requests.
+# - Access tokens expire after 15 minutes. Rerun the relevant login request when required.
+# - Registration creates BUYER. SELLER and MODERATOR are granted only through admin workflows.
+
+@baseUrl = http://localhost:8080
+
+### 00.1 - LOGIN BOOTSTRAP ADMINISTRATOR
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "admin.seed@unimarket.local",
+  "password": "AdminSeed@12345"
+}
+
+> {%
+    client.test("Admin login returned an access token", function () {
+        client.assert(response.body.accessToken, "response.body.accessToken is required");
+    });
+    client.global.set("adminToken", response.body.accessToken);
+%}
+
+### 00.2 - VERIFY ADMIN ACCOUNT AND ROLES
+GET {{baseUrl}}/api/v1/auth/me
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### 01.1 - REGISTER VERIFIED VENDOR CANDIDATE
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "seller.platform@unimarket.local",
+  "password": "SellerPlatform@12345",
+  "firstName": "Naledi",
+  "lastName": "Mokoena",
+  "displayName": "Naledi Campus Store",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true
+}
+
+> {%
+    client.test("Seller registration returned an account ID", function () {
+        client.assert(response.body.accountId, "response.body.accountId is required");
+    });
+    client.global.set("sellerAccountId", response.body.accountId);
+%}
+
+### 01.2 - LOGIN VENDOR BEFORE APPROVAL (BUYER ROLE ONLY)
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "seller.platform@unimarket.local",
+  "password": "SellerPlatform@12345"
+}
+
+> {%
+    client.test("Pre-approval seller login returned an access token", function () {
+        client.assert(response.body.accessToken, "response.body.accessToken is required");
+    });
+    client.global.set("sellerBuyerToken", response.body.accessToken);
+%}
+
+### 01.3 - COMPLETE VENDOR PROFILE
+PUT {{baseUrl}}/api/v1/account/profile
+Authorization: Bearer {{sellerBuyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "displayName": "Naledi Campus Store",
+  "phoneNumber": "+27821230001",
+  "bio": "Affordable technology, books, room essentials and campus services for students."
+}
+
+### 01.4 - DECLARE RESIDENT PERSONA
+POST {{baseUrl}}/api/v1/account/personas
+Authorization: Bearer {{sellerBuyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "persona": "RESIDENT",
+  "organizationName": null
+}
+
+### 01.5 - SUBMIT VENDOR APPLICATION
+POST {{baseUrl}}/api/v1/account/vendor-profile
+Authorization: Bearer {{sellerBuyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "vendorType": "INDIVIDUAL",
+  "businessName": "Naledi Campus Store",
+  "description": "A student-focused local shop supplying affordable pre-owned technology, textbooks, furniture, clothing and practical services.",
+  "registrationNumber": null,
+  "websiteUrl": null
+}
+
+### 01.6 - ADMIN APPROVES VENDOR AND GRANTS SELLER
+PATCH {{baseUrl}}/api/v1/admin/vendors/{{sellerAccountId}}/review
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "status": "VERIFIED",
+  "reviewNote": "Approved platform seed vendor with verified local catalogue."
+}
+
+### 01.7 - LOGIN VENDOR AFTER APPROVAL (CAPTURE FRESH SELLER JWT)
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "seller.platform@unimarket.local",
+  "password": "SellerPlatform@12345"
+}
+
+> {%
+    client.test("Post-approval seller login returned an access token", function () {
+        client.assert(response.body.accessToken, "response.body.accessToken is required");
+    });
+    client.global.set("sellerToken", response.body.accessToken);
+%}
+
+### 01.8 - VERIFY SELLER ROLE AND VENDOR PERSONA
+GET {{baseUrl}}/api/v1/auth/me
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### 02.1 - REGISTER VERIFIED STUDENT
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "240000002@mycput.ac.za",
+  "password": "StudentPlatform@12345",
+  "firstName": "Lethabo",
+  "lastName": "Mahlangu",
+  "displayName": "Lethabo M.",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true
+}
+
+### 02.2 - LOGIN STUDENT
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "240000002@mycput.ac.za",
+  "password": "StudentPlatform@12345"
+}
+
+> {%
+    client.test("Student login returned an access token", function () {
+        client.assert(response.body.accessToken, "response.body.accessToken is required");
+    });
+    client.global.set("studentToken", response.body.accessToken);
+%}
+
+### 02.3 - COMPLETE STUDENT PROFILE
+PUT {{baseUrl}}/api/v1/account/profile
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "displayName": "Lethabo M.",
+  "phoneNumber": "+27821230002",
+  "bio": "Engineering student looking for affordable textbooks, technology and campus essentials."
+}
+
+### 02.4 - DECLARE AND VERIFY STUDENT PERSONA
+POST {{baseUrl}}/api/v1/account/personas
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "persona": "STUDENT",
+  "organizationName": "Cape Peninsula University of Technology",
+  "qualification": "BACHELORS_DEGREE",
+  "yearOfStudy": 2
+}
+
+### 02.5 - VERIFY STUDENT ACCOUNT
+GET {{baseUrl}}/api/v1/account
+Authorization: Bearer {{studentToken}}
+Accept: application/json
+
+### 03.1 - REGISTER VERIFIED FACULTY MEMBER
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "faculty.platform@cput.ac.za",
+  "password": "FacultyPlatform@12345",
+  "firstName": "Ayesha",
+  "lastName": "Daniels",
+  "displayName": "Dr Ayesha Daniels",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true
+}
+
+### 03.2 - LOGIN FACULTY MEMBER
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "faculty.platform@cput.ac.za",
+  "password": "FacultyPlatform@12345"
+}
+
+> {%
+    client.test("Faculty login returned an access token", function () {
+        client.assert(response.body.accessToken, "response.body.accessToken is required");
+    });
+    client.global.set("facultyToken", response.body.accessToken);
+%}
+
+### 03.3 - COMPLETE FACULTY PROFILE
+PUT {{baseUrl}}/api/v1/account/profile
+Authorization: Bearer {{facultyToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "displayName": "Dr Ayesha Daniels",
+  "phoneNumber": "+27821230003",
+  "bio": "Faculty member supporting reuse, local commerce and accessible learning resources."
+}
+
+### 03.4 - DECLARE AND VERIFY FACULTY PERSONA
+POST {{baseUrl}}/api/v1/account/personas
+Authorization: Bearer {{facultyToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "persona": "FACULTY",
+  "organizationName": "Cape Peninsula University of Technology",
+  "qualification": "PHD",
+  "yearOfStudy": null
+}
+
+### 03.5 - VERIFY FACULTY ACCOUNT
+GET {{baseUrl}}/api/v1/account
+Authorization: Bearer {{facultyToken}}
+Accept: application/json
+
+### 04.1 - REGISTER COMMUNITY RESIDENT
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "resident.platform@unimarket.local",
+  "password": "ResidentPlatform@12345",
+  "firstName": "Zinhle",
+  "lastName": "Petersen",
+  "displayName": "Zinhle P.",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true
+}
+
+> {%
+    client.test("Resident registration returned an account ID", function () {
+        client.assert(response.body.accountId, "response.body.accountId is required");
+    });
+    client.global.set("residentAccountId", response.body.accountId);
+%}
+
+### 04.2 - LOGIN COMMUNITY RESIDENT
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "resident.platform@unimarket.local",
+  "password": "ResidentPlatform@12345"
+}
+
+> {%
+    client.test("Resident login returned an access token", function () {
+        client.assert(response.body.accessToken, "response.body.accessToken is required");
+    });
+    client.global.set("residentToken", response.body.accessToken);
+%}
+
+### 04.3 - COMPLETE RESIDENT PROFILE
+PUT {{baseUrl}}/api/v1/account/profile
+Authorization: Bearer {{residentToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "displayName": "Zinhle P.",
+  "phoneNumber": "+27821230004",
+  "bio": "Local resident supporting student entrepreneurs and sustainable community trade."
+}
+
+### 04.4 - DECLARE RESIDENT PERSONA
+POST {{baseUrl}}/api/v1/account/personas
+Authorization: Bearer {{residentToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "persona": "RESIDENT",
+  "organizationName": null
+}
+
+### 04.5 - ADMIN VERIFIES RESIDENT PERSONA
+POST {{baseUrl}}/api/v1/admin/accounts/{{residentAccountId}}/personas/RESIDENT/verify
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### 04.6 - VERIFY RESIDENT ACCOUNT
+GET {{baseUrl}}/api/v1/account
+Authorization: Bearer {{residentToken}}
+Accept: application/json
+
+### 05.1 - REGISTER MARKETPLACE BUYER
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "buyer.platform@unimarket.local",
+  "password": "BuyerPlatform@12345",
+  "firstName": "Sipho",
+  "lastName": "Khumalo",
+  "displayName": "Sipho K.",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true
+}
+
+### 05.2 - LOGIN MARKETPLACE BUYER
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "buyer.platform@unimarket.local",
+  "password": "BuyerPlatform@12345"
+}
+
+> {%
+    client.test("Buyer login returned an access token", function () {
+        client.assert(response.body.accessToken, "response.body.accessToken is required");
+    });
+    client.global.set("buyerToken", response.body.accessToken);
+%}
+
+### 05.3 - COMPLETE BUYER PROFILE
+PUT {{baseUrl}}/api/v1/account/profile
+Authorization: Bearer {{buyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "displayName": "Sipho K.",
+  "phoneNumber": "+27821230005",
+  "bio": "Community buyer searching for reliable local products and services."
+}
+
+### 05.4 - VERIFY BUYER ACCOUNT
+GET {{baseUrl}}/api/v1/account
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### 06.1 - REGISTER FUTURE MODERATOR
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "moderator.platform@unimarket.local",
+  "password": "ModeratorPlatform@12345",
+  "firstName": "Mia",
+  "lastName": "Naidoo",
+  "displayName": "Mia Moderator",
+  "acceptedTerms": true,
+  "acceptedPrivacy": true
+}
+
+> {%
+    client.test("Moderator registration returned an account ID", function () {
+        client.assert(response.body.accountId, "response.body.accountId is required");
+    });
+    client.global.set("moderatorAccountId", response.body.accountId);
+%}
+
+### 06.2 - LOGIN BEFORE MODERATOR GRANT (BUYER ROLE ONLY)
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "moderator.platform@unimarket.local",
+  "password": "ModeratorPlatform@12345"
+}
+
+### 06.3 - ADMIN GRANTS MODERATOR ROLE
+POST {{baseUrl}}/api/v1/admin/accounts/{{moderatorAccountId}}/roles
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "role": "MODERATOR"
+}
+
+### 06.4 - LOGIN AFTER MODERATOR GRANT (CAPTURE FRESH JWT)
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "moderator.platform@unimarket.local",
+  "password": "ModeratorPlatform@12345"
+}
+
+> {%
+    client.test("Post-grant moderator login returned an access token", function () {
+        client.assert(response.body.accessToken, "response.body.accessToken is required");
+    });
+    client.global.set("moderatorToken", response.body.accessToken);
+%}
+
+### 06.5 - VERIFY MODERATOR ROLE
+GET {{baseUrl}}/api/v1/auth/me
+Authorization: Bearer {{moderatorToken}}
+Accept: application/json
+
+### 07.1 - ADMIN LISTS ALL SEEDED ACCOUNTS
+GET {{baseUrl}}/api/v1/admin/accounts
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### 07.2 - ADMIN LISTS VERIFIED VENDORS
+GET {{baseUrl}}/api/v1/admin/vendors?status=VERIFIED
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### 07.3 - VERIFY STUDENT ENGAGEMENT PROFILE
+GET {{baseUrl}}/api/v1/engagement/me
+Authorization: Bearer {{studentToken}}
+Accept: application/json
+
+### 07.4 - VERIFY SELLER NOTIFICATIONS
+GET {{baseUrl}}/api/v1/notifications?page=0&size=20
+Authorization: Bearer {{sellerToken}}
+Accept: application/json

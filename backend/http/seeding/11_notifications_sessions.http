@@ -1,0 +1,149 @@
+# 11 - NOTIFICATIONS AND AUTHENTICATION SESSION LIFECYCLE
+# First use a fresh buyer token to inspect notifications.
+# Access tokens expire after 15 minutes; rerun the buyer login in file 01 before starting.
+# For session requests, run logins in order and copy response.accessToken/sessionId
+# into the variables below when instructed. The HTTP client keeps the refresh cookie.
+
+@baseUrl = http://localhost:8080
+@buyerToken = PASTE_BUYER_JWT_HERE
+@notificationId = PASTE_UNREAD_NOTIFICATION_UUID_HERE
+@currentSessionToken = PASTE_CURRENT_SESSION_JWT_HERE
+@revocableSessionId = PASTE_REVOCABLE_SESSION_UUID_HERE
+@refreshedToken = PASTE_REFRESHED_BUYER_JWT_HERE
+@passwordChangeToken = PASTE_ORIGINAL_PASSWORD_JWT_HERE
+@temporaryPasswordToken = PASTE_TEMPORARY_PASSWORD_JWT_HERE
+@finalBuyerToken = PASTE_FINAL_RESTORED_PASSWORD_JWT_HERE
+
+### LIST CUSTOMER NOTIFICATIONS
+GET {{baseUrl}}/api/v1/notifications?page=0&size=100
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### VIEW UNREAD NOTIFICATION COUNT
+GET {{baseUrl}}/api/v1/notifications/unread-count
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### MARK ONE NOTIFICATION READ
+PATCH {{baseUrl}}/api/v1/notifications/{{notificationId}}/read
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### MARK ALL REMAINING NOTIFICATIONS READ
+PATCH {{baseUrl}}/api/v1/notifications/read-all
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### CREATE A SESSION THAT WILL BE REVOKED
+POST {{baseUrl}}/api/v1/auth/login
+User-Agent: UniMarket-Seed-Revocable/1.0
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "buyer.seed@unimarket.local",
+  "password": "BuyerSeed@12345"
+}
+
+### CREATE CURRENT SESSION
+# Copy response.accessToken into @currentSessionToken.
+POST {{baseUrl}}/api/v1/auth/login
+User-Agent: UniMarket-Seed-Current/1.0
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "buyer.seed@unimarket.local",
+  "password": "BuyerSeed@12345"
+}
+
+### LIST ACTIVE SESSIONS
+# Copy the sessionId whose userAgent is UniMarket-Seed-Revocable/1.0.
+GET {{baseUrl}}/api/v1/account/sessions
+Authorization: Bearer {{currentSessionToken}}
+Accept: application/json
+
+### REVOKE SELECTED OLD SESSION
+DELETE {{baseUrl}}/api/v1/account/sessions/{{revocableSessionId}}
+Authorization: Bearer {{currentSessionToken}}
+Accept: application/json
+
+### ROTATE CURRENT REFRESH COOKIE
+# Copy response.accessToken into @refreshedToken.
+POST {{baseUrl}}/api/v1/auth/refresh
+Accept: application/json
+
+### CHECK ACCOUNT WITH REFRESHED ACCESS TOKEN
+GET {{baseUrl}}/api/v1/auth/me
+Authorization: Bearer {{refreshedToken}}
+Accept: application/json
+
+### LOG OUT CURRENT REFRESH SESSION
+POST {{baseUrl}}/api/v1/auth/logout
+Accept: application/json
+
+### LOGIN BEFORE PASSWORD CHANGE
+# Copy response.accessToken into @passwordChangeToken.
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "buyer.seed@unimarket.local",
+  "password": "BuyerSeed@12345"
+}
+
+### CHANGE TO TEMPORARY PASSWORD
+POST {{baseUrl}}/api/v1/auth/change-password
+Authorization: Bearer {{passwordChangeToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "currentPassword": "BuyerSeed@12345",
+  "newPassword": "BuyerSeedChanged@12345"
+}
+
+### LOGIN WITH TEMPORARY PASSWORD
+# Copy response.accessToken into @temporaryPasswordToken.
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "buyer.seed@unimarket.local",
+  "password": "BuyerSeedChanged@12345"
+}
+
+### RESTORE ORIGINAL PASSWORD
+POST {{baseUrl}}/api/v1/auth/change-password
+Authorization: Bearer {{temporaryPasswordToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "currentPassword": "BuyerSeedChanged@12345",
+  "newPassword": "BuyerSeed@12345"
+}
+
+### FINAL LOGIN WITH RESTORED PASSWORD
+# Copy response.accessToken into @finalBuyerToken.
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "buyer.seed@unimarket.local",
+  "password": "BuyerSeed@12345"
+}
+
+### LOG OUT OF ALL REFRESH SESSIONS
+POST {{baseUrl}}/api/v1/auth/logout-all
+Authorization: Bearer {{finalBuyerToken}}
+Accept: application/json
+
+### CONFIRM NO ACTIVE REFRESH SESSIONS REMAIN
+# The still-valid access JWT is stateless, so this request remains authorized.
+GET {{baseUrl}}/api/v1/account/sessions
+Authorization: Bearer {{finalBuyerToken}}
+Accept: application/json

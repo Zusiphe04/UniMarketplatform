@@ -1,0 +1,95 @@
+# 03 - PRODUCT LISTINGS AND IMAGE URL METADATA
+# Run after vendor approval. Copy each product-create response.id into the variables below.
+# Access tokens expire after 15 minutes; rerun the seller login in file 02 if needed.
+# Image files are externally hosted; this API stores their permanent public HTTPS URLs.
+
+@baseUrl = http://localhost:8080
+@sellerToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiNWNkYWYxOS0yMGJmLTRkOGMtOTdiNi1hYTFmOTJmOTFlMjEiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgyOTA4LCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiLCJTRUxMRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODgzODA4LCJpYXQiOjE3ODg4ODI5MDgsImp0aSI6IjFkNDI1ZTc1LWE1N2UtNDFmMi05YzcyLTEyMWU3YThmODg3MiIsInNpZCI6Ijc3OGZhYTlmLWMzNzEtNDgxNy1iYjhlLTAzMzM2OWYyMTY0ZCJ9.OiXRK0dGvMDqDQ83vI_0yUM3MYQPkDf6ezZumOJ5g3g
+@lowProductId = PASTE_TEXTBOOK_PRODUCT_UUID_HERE
+@highProductId = PASTE_LAPTOP_PRODUCT_UUID_HERE
+
+### CREATE TEXTBOOK DRAFT
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiNWNkYWYxOS0yMGJmLTRkOGMtOTdiNi1hYTFmOTJmOTFlMjEiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgyOTA4LCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiLCJTRUxMRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODgzODA4LCJpYXQiOjE3ODg4ODI5MDgsImp0aSI6IjFkNDI1ZTc1LWE1N2UtNDFmMi05YzcyLTEyMWU3YThmODg3MiIsInNpZCI6Ijc3OGZhYTlmLWMzNzEtNDgxNy1iYjhlLTAzMzM2OWYyMTY0ZCJ9.OiXRK0dGvMDqDQ83vI_0yUM3MYQPkDf6ezZumOJ5g3g
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Data Structures and Algorithms Textbook",
+  "description": "Second-edition textbook in good condition for the normal payment and review workflow.",
+  "category": "BOOKS",
+  "condition": "GOOD",
+  "price": 350.00,
+  "quantity": 5
+}
+
+### ADD TEXTBOOK IMAGE URL
+POST {{baseUrl}}/api/v1/seller/products/{{lowProductId}}/images
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiNWNkYWYxOS0yMGJmLTRkOGMtOTdiNi1hYTFmOTJmOTFlMjEiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgyOTA4LCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiLCJTRUxMRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODgzODA4LCJpYXQiOjE3ODg4ODI5MDgsImp0aSI6IjFkNDI1ZTc1LWE1N2UtNDFmMi05YzcyLTEyMWU3YThmODg3MiIsInNpZCI6Ijc3OGZhYTlmLWMzNzEtNDgxNy1iYjhlLTAzMzM2OWYyMTY0ZCJ9.OiXRK0dGvMDqDQ83vI_0yUM3MYQPkDf6ezZumOJ5g3g
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "https://placehold.co/1200x800/1E3A8A/FFFFFF/png?text=Data+Structures+Textbook",
+  "altText": "Blue Data Structures and Algorithms textbook cover",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### PUBLISH TEXTBOOK
+POST {{baseUrl}}/api/v1/seller/products/{{lowProductId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### CREATE HIGH-VALUE LAPTOP DRAFT
+# Quantity 2 supports one released escrow order and one refunded escrow order.
+POST {{baseUrl}}/api/v1/seller/products
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Engineering Student Laptop",
+  "description": "Like-new development laptop used to exercise both high-value simulated escrow outcomes.",
+  "category": "TECH",
+  "condition": "LIKE_NEW",
+  "price": 6500.00,
+  "quantity": 2,
+  "brand": "Lenovo",
+  "model": "ThinkPad engineering laptop",
+  "storage": "512 GB SSD",
+  "memory": "16 GB RAM",
+  "processor": "Intel Core i7",
+  "screenSize": "14 inches",
+  "color": "Silver"
+}
+
+### ADD LAPTOP IMAGE URL
+POST {{baseUrl}}/api/v1/seller/products/{{highProductId}}/images
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "imageUrl": "https://placehold.co/1200x800/334155/FFFFFF/png?text=Engineering+Student+Laptop",
+  "altText": "Silver engineering student laptop",
+  "displayOrder": 0,
+  "primary": true
+}
+
+### PUBLISH LAPTOP
+POST {{baseUrl}}/api/v1/seller/products/{{highProductId}}/publish
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### VIEW PUBLIC TEXTBOOK WITH IMAGES
+GET {{baseUrl}}/api/v1/products/{{lowProductId}}
+Accept: application/json
+
+### VIEW PUBLIC LAPTOP WITH IMAGES
+GET {{baseUrl}}/api/v1/products/{{highProductId}}
+Accept: application/json
+
+### SEARCH PUBLIC PRODUCT CATALOGUE
+GET {{baseUrl}}/api/v1/products?page=0&size=20
+Accept: application/json

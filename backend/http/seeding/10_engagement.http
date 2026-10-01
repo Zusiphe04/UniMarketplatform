@@ -1,0 +1,33 @@
+# 10 - POINTS, BADGES, AND LEADERBOARDS
+# Run after review creation and final escrow transitions.
+# Expected final totals for this workflow: buyer 23 points and seller 24 points.
+# Access tokens expire after 15 minutes; rerun buyer login in file 01 and seller login in file 02 if needed.
+
+@baseUrl = http://localhost:8080
+@buyerToken = PASTE_BUYER_JWT_HERE
+@sellerToken = PASTE_POST_APPROVAL_SELLER_JWT_HERE
+
+### VIEW BUYER POINTS AND BADGES
+GET {{baseUrl}}/api/v1/engagement/me
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### VIEW BUYER IMMUTABLE POINT LEDGER
+GET {{baseUrl}}/api/v1/engagement/me/points?page=0&size=100
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### VIEW SELLER POINTS AND BADGES
+GET {{baseUrl}}/api/v1/engagement/me
+Authorization: Bearer {{sellerToken}}
+Accept: application/json
+
+### VIEW BUYER LEADERBOARD
+GET {{baseUrl}}/api/v1/leaderboards/BUYER?page=0&size=20
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### VIEW SELLER LEADERBOARD
+GET {{baseUrl}}/api/v1/leaderboards/SELLER?page=0&size=20
+Authorization: Bearer {{buyerToken}}
+Accept: application/json

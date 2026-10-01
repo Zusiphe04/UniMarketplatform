@@ -1,0 +1,55 @@
+# 02 - VENDOR APPLICATION AND ADMINISTRATOR APPROVAL
+# Required values come from 01_users_and_auth.http.
+# Access tokens expire after 15 minutes; rerun the matching login in file 01 if needed.
+# After approval, run the seller login at the bottom and copy its new accessToken.
+
+@baseUrl = http://localhost:8080
+@sellerToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhOTJlYzJjZi0yYTkwLTQzMTQtYTg1NS0yZjk2Zjk0ZjQwOGEiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgwMjQyLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODgxMTQyLCJpYXQiOjE3ODg4ODAyNDIsImp0aSI6ImNlMzgyZDllLTBiOGUtNGJiMi1hODYzLTk4YmRmMzYwNWYwZCIsInNpZCI6IjIyMjM3MTIzLWIzZmMtNDI1MS04YzI1LTVmNmY5ZmIwODJiMSJ9.IQsTFsJJmaxbafjRdBEHzqHUiXAsjEwAfTIBSdG4BQs
+@adminToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZTNmYTE0MC1iNGU5LTRiOTEtODU0NC03MWYzYTM2YzkwNzMiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgwMTMwLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiLCJTRUxMRVIiLCJNT0RFUkFUT1IiLCJBRE1JTiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJleHAiOjE3ODg4ODEwMzAsImlhdCI6MTc4ODg4MDEzMCwianRpIjoiMGViMjdkM2UtYTVlMi00NWY2LTkwNzItZTZjZTdiOWM2MmY1Iiwic2lkIjoiZDljNjMwZGUtYWY2NC00NzY0LTkwYzctNDE5MGM1NTk0NWNmIn0.l2wMt-5aKJUTEnA1n1X30xKzSCyLr0MtLOj3M81Om9g
+@sellerAccountId = cb7fcdc7-8c94-4131-b1d4-c40c22d36260
+@approvedSellerToken = PASTE_POST_APPROVAL_SELLER_JWT_HERE
+
+### SUBMIT VENDOR PROFILE
+POST {{baseUrl}}/api/v1/account/vendor-profile
+Authorization: Bearer {{sellerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "vendorType": "INDIVIDUAL",
+  "businessName": "Campus Technology and Books",
+  "description": "Local academic marketplace seller for textbooks and electronics.",
+  "registrationNumber": null,
+  "websiteUrl": "https://seller.example.edu/campus-technology-books"
+}
+
+### LIST PENDING VENDORS
+GET {{baseUrl}}/api/v1/admin/vendors?status=PENDING
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZTNmYTE0MC1iNGU5LTRiOTEtODU0NC03MWYzYTM2YzkwNzMiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgxMTc2LCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiLCJTRUxMRVIiLCJNT0RFUkFUT1IiLCJBRE1JTiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJleHAiOjE3ODg4ODIwNzYsImlhdCI6MTc4ODg4MTE3NiwianRpIjoiOTljMjllMGQtYTQzMy00YTE1LTkwOGQtZDE1ZTk4ZmE2MGY5Iiwic2lkIjoiYWUwMWNmMWMtNjE0ZC00ZWI0LThiMWMtMzc1NDk5NDg0YjczIn0.tn2yt4UJhXtPKPuqKZrDizJ_4PQ2atlq9MnJRyP0aTI
+Accept: application/json
+
+### APPROVE VENDOR AND GRANT SELLER ROLE
+PATCH {{baseUrl}}/api/v1/admin/vendors/{{sellerAccountId}}/review
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkZTNmYTE0MC1iNGU5LTRiOTEtODU0NC03MWYzYTM2YzkwNzMiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgxMTc2LCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiLCJTRUxMRVIiLCJNT0RFUkFUT1IiLCJBRE1JTiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJleHAiOjE3ODg4ODIwNzYsImlhdCI6MTc4ODg4MTE3NiwianRpIjoiOTljMjllMGQtYTQzMy00YTE1LTkwOGQtZDE1ZTk4ZmE2MGY5Iiwic2lkIjoiYWUwMWNmMWMtNjE0ZC00ZWI0LThiMWMtMzc1NDk5NDg0YjczIn0.tn2yt4UJhXtPKPuqKZrDizJ_4PQ2atlq9MnJRyP0aTI
+Content-Type: application/json
+Accept: application/json
+
+{
+  "status": "VERIFIED",
+  "reviewNote": "Academic seed vendor identity and marketplace details approved."
+}
+
+### LOGIN AGAIN TO RECEIVE A JWT CONTAINING SELLER
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "seller.seed@unimarket.local",
+  "password": "SellerSeed@12345"
+}
+
+### CHECK VERIFIED VENDOR PROFILE WITH NEW SELLER TOKEN
+GET {{baseUrl}}/api/v1/account/vendor-profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhOTJlYzJjZi0yYTkwLTQzMTQtYTg1NS0yZjk2Zjk0ZjQwOGEiLCJhdWQiOiJ1bmltYXJrZXQtYXBpIiwibmJmIjoxNzg4ODgxMzEyLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicm9sZXMiOlsiQlVZRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiZXhwIjoxNzg4ODgyMjEyLCJpYXQiOjE3ODg4ODEzMTIsImp0aSI6IjYwYTU2MDA0LWY0NGEtNDU0NC1hMGJmLTBkMzliYzE0ODhkMyIsInNpZCI6IjMzMGI0MmVmLTA4YTEtNGY4Yy05MDQwLTgxZWMwNDZiMzg0NSJ9.ra6YtXnk9KI_pa-ZLYt0jeN0pxgahlEGNEgUaEs7RM8
+Accept: application/json

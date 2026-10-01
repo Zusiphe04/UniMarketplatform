@@ -1,0 +1,100 @@
+# 06 - CART AND CHECKOUT
+# Run after products exist. Copy each checkout response.id (UUID, not the UM-* reference)
+# into 07_payments.http and 09_escrow.http.
+# Access tokens expire after 15 minutes; rerun the buyer login in file 01 if needed.
+
+@baseUrl = http://localhost:8080
+@buyerToken = PASTE_BUYER_JWT_HERE
+@lowProductId = PASTE_TEXTBOOK_PRODUCT_UUID_HERE
+@highProductId = PASTE_LAPTOP_PRODUCT_UUID_HERE
+
+### VIEW EMPTY CART
+GET {{baseUrl}}/api/v1/cart
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### ADD TEXTBOOK TO CART
+POST {{baseUrl}}/api/v1/cart/items
+Authorization: Bearer {{buyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": "{{lowProductId}}",
+  "quantity": 1
+}
+
+### CHECKOUT TEXTBOOK FOR CAMPUS PICKUP
+# Copy response.id as lowOrderId.
+POST {{baseUrl}}/api/v1/checkout
+Authorization: Bearer {{buyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "fulfillmentMethod": "CAMPUS_PICKUP",
+  "deliveryAddress": null
+}
+
+### ADD FIRST LAPTOP UNIT TO CART
+POST {{baseUrl}}/api/v1/cart/items
+Authorization: Bearer {{buyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": "{{highProductId}}",
+  "quantity": 1
+}
+
+### CHECKOUT FIRST LAPTOP FOR RELEASE WORKFLOW
+# Copy response.id as highReleaseOrderId.
+POST {{baseUrl}}/api/v1/checkout
+Authorization: Bearer {{buyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "fulfillmentMethod": "CAMPUS_PICKUP",
+  "deliveryAddress": null
+}
+
+### ADD SECOND LAPTOP UNIT TO CART
+POST {{baseUrl}}/api/v1/cart/items
+Authorization: Bearer {{buyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": "{{highProductId}}",
+  "quantity": 1
+}
+
+### CHECKOUT SECOND LAPTOP FOR REFUND WORKFLOW
+# Delivery address belongs to checkout, not the credential-free payment payload.
+# Copy response.id as highRefundOrderId.
+POST {{baseUrl}}/api/v1/checkout
+Authorization: Bearer {{buyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "fulfillmentMethod": "LOCAL_DELIVERY",
+  "deliveryAddress": "12 Long Street, Cape Town City Centre, Cape Town, Western Cape, 8001, South Africa"
+}
+
+### LIST CUSTOMER ORDERS
+GET {{baseUrl}}/api/v1/orders
+Authorization: Bearer {{buyerToken}}
+Accept: application/json
+
+### LEAVE ONE TEXTBOOK IN CART FOR DATABASE VERIFICATION
+POST {{baseUrl}}/api/v1/cart/items
+Authorization: Bearer {{buyerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": "{{lowProductId}}",
+  "quantity": 1
+}
