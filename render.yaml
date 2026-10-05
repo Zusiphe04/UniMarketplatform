@@ -35,6 +35,10 @@ services:
         value: update
       - key: DB_POOL_MAX_SIZE
         value: 5
+      - key: DB_INITIALIZATION_FAIL_TIMEOUT_MS
+        value: 60000
+      - key: DB_VALIDATION_TIMEOUT_MS
+        value: 5000
       - key: UNIMARKET_MEDIA_UPLOAD_DIR
         value: /var/data/uploads
       - key: JAVA_OPTS

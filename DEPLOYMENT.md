@@ -144,3 +144,17 @@ Copy-Item frontend\.env.example frontend\.env.local
 Start the backend in IntelliJ or with the Maven wrapper, then run `npm run dev` in `frontend`. Vite proxies both `/api` and `/actuator` to `http://localhost:8080`, so the startup splash works locally.
 
 Content was rephrased for compliance with licensing restrictions.
+
+## TiDB `Unable to determine Dialect` troubleshooting
+
+The production profile explicitly uses `com.mysql.cj.jdbc.Driver` and `org.hibernate.dialect.MySQLDialect`, which PingCAP recommends for TiDB. If Render still reports a connection failure, verify all of the following:
+
+1. `DB_URL` starts with `jdbc:mysql://` (not `mysql://`).
+2. The URL contains `/unimarket` before `?`.
+3. `unimarket` exists in TiDB: `CREATE DATABASE IF NOT EXISTS unimarket;`.
+4. `DB_USERNAME` and `DB_PASSWORD` are separate Render variables and contain no surrounding quotes.
+5. The TiDB cluster is running and its public-network access permits Render connections.
+6. The hostname and port exactly match TiDB Cloud's Connect dialog.
+7. Use `sslMode=VERIFY_IDENTITY`; do not disable TLS verification.
+
+After correcting variables, use **Manual Deploy > Clear build cache & deploy** in Render.
