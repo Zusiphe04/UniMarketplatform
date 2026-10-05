@@ -19,7 +19,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/orders")
-@PreAuthorize("hasRole('BUYER') and !hasRole('ADMIN')")
+@PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
 public class OrderController {
     private final IOrderService orderService;
     private final IOrderItemFulfillmentService fulfillmentService;

@@ -18,6 +18,9 @@ public interface IProductRepository extends IRepository<Product, UUID> {
     /** Reads a product only when it is visible in the public catalogue. */
     Product readPublicById(UUID id);
 
+    /** Lists every lifecycle state owned by one seller, newest first. */
+    Page<Product> readBySellerId(UUID sellerId, Pageable pageable);
+
     /** Searches products visible in the public catalogue using persisted compatibility values. */
     Page<Product> searchPublic(String query, Collection<ProductCategory> categories, Pageable pageable);
 }

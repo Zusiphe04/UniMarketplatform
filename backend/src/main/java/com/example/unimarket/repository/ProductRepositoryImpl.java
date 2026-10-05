@@ -82,6 +82,11 @@ public class ProductRepositoryImpl implements IProductRepository {
     }
 
     @Override
+    public Page<Product> readBySellerId(UUID sellerId, Pageable pageable) {
+        return jpaRepository.findBySellerIdOrderByCreatedAtDesc(sellerId, pageable);
+    }
+
+    @Override
     public Page<Product> searchPublic(String query,
                                       Collection<ProductCategory> categories,
                                       Pageable pageable) {

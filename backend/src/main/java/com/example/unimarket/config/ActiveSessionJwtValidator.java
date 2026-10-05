@@ -1,31 +1,37 @@
 package com.example.unimarket.config;
 
-import com.example.unimarket.domain.UserAccount;
-import com.example.unimarket.repository.IAuthSessionRepository;
-import com.example.unimarket.repository.IUserAccountRepository;
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-import java.util.UUID;
+import com.example.unimarket.domain.UserAccount;
+import com.example.unimarket.repository.IAuthSessionRepository;
+import com.example.unimarket.repository.IUserAccountRepository;
+import com.example.unimarket.repository.IUserRoleAssignmentRepository;
 
-/**
- * Rejects a signed access token when its account is no longer allowed to
- * authenticate or its server-side refresh-token family has been revoked.
- */
+/** Rejects access tokens whose account, session family, or embedded roles are no longer current. */
 @Component
 public class ActiveSessionJwtValidator implements OAuth2TokenValidator<Jwt> {
     private static final OAuth2Error INVALID_TOKEN = new OAuth2Error("invalid_token");
     private final IUserAccountRepository accountRepository;
     private final IAuthSessionRepository sessionRepository;
+    private final IUserRoleAssignmentRepository roleRepository;
 
     public ActiveSessionJwtValidator(IUserAccountRepository accountRepository,
-                                     IAuthSessionRepository sessionRepository) {
+                                     IAuthSessionRepository sessionRepository,
+                                     IUserRoleAssignmentRepository roleRepository) {
         this.accountRepository = accountRepository;
         this.sessionRepository = sessionRepository;
+        this.roleRepository = roleRepository;
     }
 
     @Override
@@ -36,7 +42,18 @@ public class ActiveSessionJwtValidator implements OAuth2TokenValidator<Jwt> {
 
         UserAccount account = accountRepository.read(userId);
         if (account == null || !account.canAuthenticate(Instant.now())) return invalid();
-        return sessionRepository.hasActiveSessionFamily(userId, tokenFamilyId)
+        if (!sessionRepository.hasActiveSessionFamily(userId, tokenFamilyId)) return invalid();
+
+        List<String> claimRoles;
+        try {
+            claimRoles = token.getClaimAsStringList("roles");
+        } catch (RuntimeException exception) {
+            return invalid();
+        }
+        if (claimRoles == null || claimRoles.stream().anyMatch(value -> value == null || value.isBlank())) return invalid();
+        Set<String> persistedRoles = roleRepository.readActiveByUserId(userId).stream()
+                .map(assignment -> assignment.getRole().name()).collect(Collectors.toSet());
+        return persistedRoles.equals(new HashSet<>(claimRoles))
                 ? OAuth2TokenValidatorResult.success() : invalid();
     }
 

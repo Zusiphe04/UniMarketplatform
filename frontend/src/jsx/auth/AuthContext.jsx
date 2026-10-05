@@ -35,10 +35,17 @@ export function AuthProvider({ children }) {
       });
 
     const expireSession = () => clearSession();
+    const applyRefreshedSession = (event) => {
+      if (!event.detail) return;
+      setAccount(event.detail);
+      setStatus('authenticated');
+    };
     window.addEventListener('unimarket:auth-expired', expireSession);
+    window.addEventListener('unimarket:session-refreshed', applyRefreshedSession);
     return () => {
       active = false;
       window.removeEventListener('unimarket:auth-expired', expireSession);
+      window.removeEventListener('unimarket:session-refreshed', applyRefreshedSession);
     };
   }, [clearSession]);
 
@@ -122,6 +129,18 @@ export function AuthProvider({ children }) {
     setAccount(latest);
     return latest;
   }, []);
+
+  useEffect(() => {
+    if (status !== 'authenticated') return undefined;
+    const reconcile = () => reconcileAccount().catch(() => {});
+    const reconcileWhenVisible = () => { if (document.visibilityState === 'visible') reconcile(); };
+    window.addEventListener('focus', reconcile);
+    document.addEventListener('visibilitychange', reconcileWhenVisible);
+    return () => {
+      window.removeEventListener('focus', reconcile);
+      document.removeEventListener('visibilitychange', reconcileWhenVisible);
+    };
+  }, [status, reconcileAccount]);
 
   const value = useMemo(() => ({
     account,

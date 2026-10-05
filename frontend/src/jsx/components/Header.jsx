@@ -76,6 +76,10 @@ export default function Header() {
 
   // App-style header: hide the brand row while scrolling down, reveal it on scroll up.
   useEffect(() => {
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setCondensed(false);
+      return undefined;
+    }
     let lastY = window.scrollY;
     let frame = 0;
     const onScroll = () => {
@@ -148,12 +152,21 @@ export default function Header() {
 
   const primaryRole = getPrimaryRole(auth.account);
   const displayName = auth.account?.displayName || auth.account?.fullName || 'UniMarket member';
-  const isSeller = auth.hasRole('SELLER');
+  const hasSellerRole = auth.hasRole('SELLER');
+  const hasAdminRole = auth.hasRole('ADMIN');
+  const isSeller = primaryRole === 'SELLER';
+  const isAdmin = primaryRole === 'ADMIN';
+  const buyerNavigation = !hasSellerRole && !hasAdminRole;
   const vendorDestination = isSeller ? '/seller' : auth.isAuthenticated ? '/vendor-status' : '/register?type=VENDOR';
-  const navigation = NAVIGATION.map((item) => (
-    <NavLink key={item.label} to={item.label === 'Vendors' ? vendorDestination : item.to} onClick={closeMenu}>
-      {item.label}
-    </NavLink>
+  const navigationItems = isAdmin
+    ? [{ label: 'Admin dashboard', to: '/admin' }, { label: 'Accounts', to: '/admin/accounts' }]
+    : isSeller
+      ? [{ label: 'Seller dashboard', to: '/seller' }]
+      : buyerNavigation
+        ? NAVIGATION.map((item) => ({ ...item, to: item.label === 'Vendors' ? vendorDestination : item.to }))
+        : [{ label: `${ROLE_LABELS[primaryRole] || 'Account'} dashboard`, to: auth.defaultRoute }];
+  const navigation = navigationItems.map((item) => (
+    <NavLink key={item.label} to={item.to} onClick={closeMenu}>{item.label}</NavLink>
   ));
   const displayedCartCount = cart.itemCount > 99 ? '99+' : String(cart.itemCount);
   const cartBadge = cart.itemCount > 0 ? <span className="header-cart-badge" aria-hidden="true">{displayedCartCount}</span> : null;
@@ -161,16 +174,13 @@ export default function Header() {
   return <>
     <header className={`site-header${condensed ? ' site-header--condensed' : ''}`} id="top">
       <div className="container site-header__inner">
-        <button className="menu-toggle" ref={toggleRef} type="button" aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={() => setMenuOpen((open) => !open)}>
-          <Icon name="menu" size={22} />
-        </button>
         <Brand />
         <nav className="desktop-nav" aria-label="Primary navigation">{navigation}</nav>
 
         <div className="header-actions">
-          <button className="header-search-toggle" type="button" aria-label="Search marketplace" aria-expanded={searchOpen} aria-controls="header-search-panel" onClick={() => setSearchOpen((open) => !open)}>
+          {buyerNavigation && <button className="header-search-toggle" type="button" aria-label="Search marketplace" aria-expanded={searchOpen} aria-controls="header-search-panel" onClick={() => setSearchOpen((open) => !open)}>
             <Icon name="search" size={17} />
-          </button>
+          </button>}
           {auth.isAuthenticated && <Link className="header-icon-link" to="/notifications" aria-label="Inbox notifications" title="Inbox">
             <Icon name="bell" size={20} />
           </Link>}
@@ -192,13 +202,16 @@ export default function Header() {
             <Link className="button button--dark button--header" to="/register">Get Started <Icon name="arrowRight" size={14} /></Link>
           </>}
         </div>
+        <button className="menu-toggle" ref={toggleRef} type="button" aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="mobile-menu" onClick={() => setMenuOpen((open) => !open)}>
+          <Icon name="menu" size={22} />
+        </button>
       </div>
 
-      <div className="header-mobile-search">
+      {buyerNavigation && <div className="header-mobile-search">
         <div className="container"><SearchBox id="header-mobile-search" value={searchValue} onChange={setSearchValue} onSubmit={submitSearch} /></div>
-      </div>
+      </div>}
 
-      {searchOpen && <div className="header-search-panel header-search-panel--open" id="header-search-panel">
+      {buyerNavigation && searchOpen && <div className="header-search-panel header-search-panel--open" id="header-search-panel">
         <div className="container"><SearchBox id="header-search" value={searchValue} onChange={setSearchValue} onSubmit={submitSearch} /></div>
       </div>}
     </header>
@@ -232,30 +245,47 @@ export default function Header() {
           </section>
 
           <nav className="mobile-drawer__nav" aria-label="Mobile navigation">
-            <p className="mobile-drawer__label">Shop</p>
-            <DrawerLink end icon="home" to="/" onNavigate={closeMenu}>Home</DrawerLink>
-            <DrawerLink icon="grid" to="/marketplace" onNavigate={closeMenu}>Marketplace</DrawerLink>
-            {cart.canPurchase && <DrawerLink icon="bag" to="/cart" onNavigate={closeMenu} badge={cart.itemCount > 0 ? <span className="mobile-drawer__badge">{displayedCartCount}</span> : null}>My cart</DrawerLink>}
+            {buyerNavigation && <>
+              <p className="mobile-drawer__label">Shop</p>
+              <DrawerLink end icon="home" to="/" onNavigate={closeMenu}>Home</DrawerLink>
+              <DrawerLink icon="grid" to="/marketplace" onNavigate={closeMenu}>Marketplace</DrawerLink>
+              {cart.canPurchase && <DrawerLink icon="bag" to="/cart" onNavigate={closeMenu} badge={cart.itemCount > 0 ? <span className="mobile-drawer__badge">{displayedCartCount}</span> : null}>My cart</DrawerLink>}
 
-            <p className="mobile-drawer__label">Shop by category</p>
-            <div className="mobile-drawer__categories">
-              {CATEGORIES.map((category) => (
-                <Link key={category.value} to={`/marketplace?category=${category.value}#listings`} onClick={closeMenu}>
-                  <img src={category.image} alt="" loading="lazy" />
-                  <span>{category.label}</span>
-                </Link>
-              ))}
-            </div>
+              <p className="mobile-drawer__label">Shop by category</p>
+              <div className="mobile-drawer__categories">
+                {CATEGORIES.map((category) => (
+                  <Link key={category.value} to={`/marketplace?category=${category.value}#listings`} onClick={closeMenu}>
+                    <img src={category.image} alt="" loading="lazy" />
+                    <span>{category.label}</span>
+                  </Link>
+                ))}
+              </div>
 
-            <p className="mobile-drawer__label">Community</p>
-            <DrawerLink icon="users" to="/community" onNavigate={closeMenu}>Community &amp; events</DrawerLink>
-            <DrawerLink icon="spark" to="/about" onNavigate={closeMenu}>About us</DrawerLink>
+              <p className="mobile-drawer__label">Community</p>
+              <DrawerLink icon="users" to="/community" onNavigate={closeMenu}>Community &amp; events</DrawerLink>
+              <DrawerLink icon="spark" to="/about" onNavigate={closeMenu}>About us</DrawerLink>
+            </>}
 
-            <p className="mobile-drawer__label">Vendors</p>
-            {isSeller
-              ? <DrawerLink icon="store" to="/seller" onNavigate={closeMenu}>Seller dashboard</DrawerLink>
-              : <DrawerLink icon="store" to={auth.isAuthenticated ? '/vendor-status' : '/register?type=VENDOR'} onNavigate={closeMenu}>Become a vendor</DrawerLink>}
-            {auth.isAuthenticated && auth.hasRole('BUYER') && !isSeller && <DrawerLink icon="shield" to="/vendor-status" onNavigate={closeMenu}>Application status</DrawerLink>}
+            {isSeller && <>
+              <p className="mobile-drawer__label">Vendor</p>
+              <DrawerLink icon="grid" to="/seller" onNavigate={closeMenu}>Seller dashboard</DrawerLink>
+              <DrawerLink icon="shield" to="/vendor-status" onNavigate={closeMenu}>Verified vendor status</DrawerLink>
+              <DrawerLink icon="store" to="/seller#product-editor" onNavigate={closeMenu}>My listings</DrawerLink>
+              <DrawerLink icon="bag" to="/seller#seller-orders" onNavigate={closeMenu}>Customer orders</DrawerLink>
+            </>}
+
+            {isAdmin && <>
+              <p className="mobile-drawer__label">Administration</p>
+              <DrawerLink icon="grid" to="/admin" onNavigate={closeMenu}>Admin dashboard</DrawerLink>
+              <DrawerLink icon="users" to="/admin/accounts" onNavigate={closeMenu}>Accounts</DrawerLink>
+              <DrawerLink icon="shield" to="/moderation" onNavigate={closeMenu}>Moderation</DrawerLink>
+            </>}
+
+            {buyerNavigation && <>
+              <p className="mobile-drawer__label">Vendors</p>
+              <DrawerLink icon="store" to={auth.isAuthenticated ? '/vendor-status' : '/register?type=VENDOR'} onNavigate={closeMenu}>Become a vendor</DrawerLink>
+              {auth.isAuthenticated && auth.hasRole('BUYER') && <DrawerLink icon="shield" to="/vendor-status" onNavigate={closeMenu}>Application status</DrawerLink>}
+            </>}
 
             {auth.isAuthenticated && <>
               <p className="mobile-drawer__label">Account</p>

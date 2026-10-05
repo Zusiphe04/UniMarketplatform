@@ -13,6 +13,7 @@ import com.example.unimarket.request.AddCartItemRequest;
 import com.example.unimarket.request.UpdateCartItemRequest;
 import com.example.unimarket.response.CartItemResponse;
 import com.example.unimarket.response.CartResponse;
+import com.example.unimarket.service.IActorRolePolicy;
 import com.example.unimarket.service.ICartService;
 import com.example.unimarket.service.IInventoryReservationService;
 import org.springframework.stereotype.Service;
@@ -29,15 +30,29 @@ public class CartServiceImpl implements ICartService {
     private final IProductRepository productRepository;
     private final IProductImageRepository imageRepository;
     private final IInventoryReservationService reservationService;
+    private final IActorRolePolicy actorRolePolicy;
+
     public CartServiceImpl(ICartItemRepository cartRepository, IProductRepository productRepository,
-                           IProductImageRepository imageRepository, IInventoryReservationService reservationService) {
-        this.cartRepository = cartRepository; this.productRepository = productRepository; this.imageRepository = imageRepository;
+                           IProductImageRepository imageRepository, IInventoryReservationService reservationService,
+                           IActorRolePolicy actorRolePolicy) {
+        this.cartRepository = cartRepository;
+        this.productRepository = productRepository;
+        this.imageRepository = imageRepository;
         this.reservationService = reservationService;
+        this.actorRolePolicy = actorRolePolicy;
     }
-    @Override @Transactional(readOnly = true)
-    public CartResponse getCart(UUID buyerId) { return response(buyerId); }
-    @Override @Transactional
+
+    @Override
+    @Transactional(readOnly = true)
+    public CartResponse getCart(UUID buyerId) {
+        actorRolePolicy.requireBuyerOnly(buyerId);
+        return response(buyerId);
+    }
+
+    @Override
+    @Transactional
     public CartResponse addItem(UUID buyerId, AddCartItemRequest request) {
+        actorRolePolicy.requireBuyerOnly(buyerId);
         reservationService.expireDueReservations(LAZY_EXPIRY_BATCH_SIZE);
         Product product = purchasableProduct(buyerId, request.productId());
         CartItem existing = cartRepository.readByBuyerIdAndProductId(buyerId, request.productId());
@@ -47,11 +62,16 @@ public class CartServiceImpl implements ICartService {
             CartItem item = CartItemFactory.create(buyerId, request.productId(), quantity);
             if (item == null) throw new ValidationException("The cart item is invalid.");
             cartRepository.create(item);
-        } else cartRepository.update(CartItemFactory.changeQuantity(existing, quantity));
+        } else {
+            cartRepository.update(CartItemFactory.changeQuantity(existing, quantity));
+        }
         return response(buyerId);
     }
-    @Override @Transactional
+
+    @Override
+    @Transactional
     public CartResponse updateItem(UUID buyerId, UUID productId, UpdateCartItemRequest request) {
+        actorRolePolicy.requireBuyerOnly(buyerId);
         reservationService.expireDueReservations(LAZY_EXPIRY_BATCH_SIZE);
         Product product = purchasableProduct(buyerId, productId);
         validateStock(product, request.quantity());
@@ -62,28 +82,48 @@ public class CartServiceImpl implements ICartService {
         cartRepository.update(updated);
         return response(buyerId);
     }
-    @Override @Transactional public CartResponse removeItem(UUID buyerId, UUID productId) {
+
+    @Override
+    @Transactional
+    public CartResponse removeItem(UUID buyerId, UUID productId) {
+        actorRolePolicy.requireBuyerOnly(buyerId);
         CartItem item = cartRepository.readByBuyerIdAndProductId(buyerId, productId);
         if (item == null) throw ResourceNotFoundException.of("Cart item");
-        cartRepository.delete(item.getId()); return response(buyerId);
+        cartRepository.delete(item.getId());
+        return response(buyerId);
     }
-    @Override @Transactional public void clear(UUID buyerId) { cartRepository.deleteByBuyerId(buyerId); }
+
+    @Override
+    @Transactional
+    public void clear(UUID buyerId) {
+        actorRolePolicy.requireBuyerOnly(buyerId);
+        cartRepository.deleteByBuyerId(buyerId);
+    }
+
     private Product purchasableProduct(UUID buyerId, UUID productId) {
         Product product = productRepository.readByIdForUpdate(productId);
-        if (product == null || product.getStatus() != ProductStatus.PUBLISHED) throw ResourceNotFoundException.of("Published product");
-        if (product.getSellerId().equals(buyerId)) throw new ValidationException("You cannot add your own product to your cart.");
+        if (product == null || product.getStatus() != ProductStatus.PUBLISHED) {
+            throw ResourceNotFoundException.of("Published product");
+        }
+        if (product.getSellerId().equals(buyerId)) {
+            throw new ValidationException("You cannot add your own product to your cart.");
+        }
         return product;
     }
+
     private void validateStock(Product product, int quantity) {
         if (quantity < 1 || quantity > 99 || quantity > product.getAvailableQuantity()) {
             throw new ValidationException("The requested quantity is not available.");
         }
     }
+
     private CartResponse response(UUID buyerId) {
         List<CartItemResponse> items = new ArrayList<>();
         for (CartItem item : cartRepository.readByBuyerId(buyerId)) {
             Product product = productRepository.read(item.getProductId());
-            if (product != null) items.add(CartItemResponse.from(item, product, imageRepository.readByProductId(product.getId())));
+            if (product != null) {
+                items.add(CartItemResponse.from(item, product, imageRepository.readByProductId(product.getId())));
+            }
         }
         return CartResponse.of(items);
     }

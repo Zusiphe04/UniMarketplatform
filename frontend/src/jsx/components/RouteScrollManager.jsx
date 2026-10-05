@@ -7,6 +7,10 @@ function prefersReducedMotion() {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 }
 
+function focusRouteContent() {
+  document.getElementById('route-content')?.focus({ preventScroll: true });
+}
+
 function scrollToHash(hash) {
   let id;
   try {
@@ -20,11 +24,7 @@ function scrollToHash(hash) {
 
   const headerHeight = document.querySelector('.site-header')?.getBoundingClientRect().height ?? 72;
   const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - headerHeight - 12);
-  window.scrollTo({
-    top,
-    left: 0,
-    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-  });
+  window.scrollTo({ top, left: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
   return true;
 }
 
@@ -33,24 +33,32 @@ export default function RouteScrollManager() {
   const previousPathname = useRef(null);
 
   useEffect(() => {
+    const hadPreviousRoute = previousPathname.current !== null;
     const pathChanged = previousPathname.current !== pathname;
     previousPathname.current = pathname;
     const timers = [];
+    let focusFrame = 0;
+
+    if (pathChanged && hadPreviousRoute) {
+      focusFrame = window.requestAnimationFrame(focusRouteContent);
+    }
 
     if (!hash) {
       if (pathChanged) window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-      return undefined;
+    } else {
+      let attempts = 0;
+      const findTarget = () => {
+        if (scrollToHash(hash) || attempts >= MAX_HASH_ATTEMPTS) return;
+        attempts += 1;
+        timers.push(window.setTimeout(findTarget, 50));
+      };
+      findTarget();
     }
 
-    let attempts = 0;
-    const findTarget = () => {
-      if (scrollToHash(hash) || attempts >= MAX_HASH_ATTEMPTS) return;
-      attempts += 1;
-      timers.push(window.setTimeout(findTarget, 50));
+    return () => {
+      if (focusFrame) window.cancelAnimationFrame(focusFrame);
+      timers.forEach(window.clearTimeout);
     };
-
-    findTarget();
-    return () => timers.forEach(window.clearTimeout);
   }, [pathname, hash]);
 
   return null;

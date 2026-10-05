@@ -5,6 +5,7 @@ import com.example.unimarket.request.CreateBulletinPostRequest;
 import com.example.unimarket.request.UpdateBulletinPostRequest;
 import com.example.unimarket.response.BulletinPostResponse;
 import com.example.unimarket.response.ImageUploadResponse;
+import com.example.unimarket.service.IActorRolePolicy;
 import com.example.unimarket.service.IBulletinPostService;
 import com.example.unimarket.service.IMediaStorageService;
 import jakarta.validation.Valid;
@@ -33,13 +34,17 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/bulletin")
+@PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
 public class BulletinPostController {
     private final IBulletinPostService bulletinService;
     private final IMediaStorageService mediaStorageService;
+    private final IActorRolePolicy actorRolePolicy;
 
-    public BulletinPostController(IBulletinPostService bulletinService, IMediaStorageService mediaStorageService) {
+    public BulletinPostController(IBulletinPostService bulletinService, IMediaStorageService mediaStorageService,
+                                  IActorRolePolicy actorRolePolicy) {
         this.bulletinService = bulletinService;
         this.mediaStorageService = mediaStorageService;
+        this.actorRolePolicy = actorRolePolicy;
     }
 
     @GetMapping
@@ -56,7 +61,7 @@ public class BulletinPostController {
     }
 
     @GetMapping("/mine")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
     public ResponseEntity<Page<BulletinPostResponse>> mine(
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(defaultValue = "0") int page,
@@ -65,7 +70,7 @@ public class BulletinPostController {
     }
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
     public ResponseEntity<BulletinPostResponse> create(
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody CreateBulletinPostRequest request) {
@@ -73,17 +78,18 @@ public class BulletinPostController {
     }
 
     @PostMapping(path = "/images/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
     public ResponseEntity<ImageUploadResponse> uploadImage(@AuthenticationPrincipal Jwt jwt,
             @RequestPart("image") MultipartFile image) {
-        userId(jwt);
+        UUID actorId = userId(jwt);
+        actorRolePolicy.requireBuyerOnly(actorId);
         String path = mediaStorageService.storeImage(image, "events");
         String imageUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path(path).toUriString();
         return ResponseEntity.status(HttpStatus.CREATED).body(new ImageUploadResponse(imageUrl));
     }
 
     @PutMapping("/{postId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
     public ResponseEntity<BulletinPostResponse> update(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID postId,
@@ -92,14 +98,14 @@ public class BulletinPostController {
     }
 
     @PatchMapping("/{postId}/publish")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
     public ResponseEntity<BulletinPostResponse> publish(
             @AuthenticationPrincipal Jwt jwt, @PathVariable UUID postId) {
         return ResponseEntity.ok(bulletinService.publish(userId(jwt), postId));
     }
 
     @PatchMapping("/{postId}/archive")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
     public ResponseEntity<BulletinPostResponse> archive(
             @AuthenticationPrincipal Jwt jwt, @PathVariable UUID postId) {
         return ResponseEntity.ok(bulletinService.archive(userId(jwt), postId));

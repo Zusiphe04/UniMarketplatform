@@ -153,3 +153,7 @@ For backend API and seed-data details, see [`backend/README.md`](backend/README.
 ## License
 
 This project is distributed under the terms in [LICENSE](LICENSE).
+
+## Production deployment
+
+For the API-aware startup splash and complete TiDB Cloud, Render, and Vercel setup, follow [`DEPLOYMENT.md`](DEPLOYMENT.md). The deployment includes a Render health check, Docker runtime, persistent upload disk, Vercel SPA routing, TiDB TLS configuration, and the required environment variables.

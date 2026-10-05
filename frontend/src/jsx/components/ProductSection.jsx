@@ -36,7 +36,6 @@ export default function ProductSection({
       <div className="container">
         <div className="reference-heading">
           <div>
-            <p className="eyebrow eyebrow--line">Fresh in the marketplace</p>
             <h2 id="listings-title">{title}</h2>
             {resultSummary && <p className="catalogue-summary" role="status">{resultSummary}</p>}
           </div>

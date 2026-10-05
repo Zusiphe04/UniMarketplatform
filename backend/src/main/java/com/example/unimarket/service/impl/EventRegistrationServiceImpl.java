@@ -19,6 +19,7 @@ import com.example.unimarket.repository.IUserAccountRepository;
 import com.example.unimarket.repository.IUserProfileRepository;
 import com.example.unimarket.response.EventAttendeeResponse;
 import com.example.unimarket.response.EventRegistrationResponse;
+import com.example.unimarket.service.IActorRolePolicy;
 import com.example.unimarket.service.IEventRegistrationService;
 import com.example.unimarket.service.INotificationService;
 import org.springframework.stereotype.Service;
@@ -35,22 +36,26 @@ public class EventRegistrationServiceImpl implements IEventRegistrationService {
     private final IUserAccountRepository accountRepository;
     private final IUserProfileRepository profileRepository;
     private final INotificationService notificationService;
+    private final IActorRolePolicy actorRolePolicy;
 
     public EventRegistrationServiceImpl(IBulletinPostRepository bulletinRepository,
                                         IEventRegistrationRepository registrationRepository,
                                         IUserAccountRepository accountRepository,
                                         IUserProfileRepository profileRepository,
-                                        INotificationService notificationService) {
+                                        INotificationService notificationService,
+                                        IActorRolePolicy actorRolePolicy) {
         this.bulletinRepository = bulletinRepository;
         this.registrationRepository = registrationRepository;
         this.accountRepository = accountRepository;
         this.profileRepository = profileRepository;
         this.notificationService = notificationService;
+        this.actorRolePolicy = actorRolePolicy;
     }
 
     @Override
     @Transactional
     public EventRegistrationResponse register(UUID attendeeId, UUID eventId) {
+        actorRolePolicy.requireBuyerOnly(attendeeId);
         ensureActive(attendeeId);
         BulletinPost event = requiredOpenEventForUpdate(eventId);
         if (event.getAuthorId().equals(attendeeId)) {
@@ -76,6 +81,7 @@ public class EventRegistrationServiceImpl implements IEventRegistrationService {
     @Override
     @Transactional(readOnly = true)
     public EventRegistrationResponse getOwnRegistration(UUID attendeeId, UUID eventId) {
+        actorRolePolicy.requireBuyerOnly(attendeeId);
         EventRegistration registration = registrationRepository.readByEventIdAndAttendeeId(eventId, attendeeId);
         if (registration == null) throw ResourceNotFoundException.of("Event registration");
         BulletinPost event = bulletinRepository.read(eventId);
@@ -86,6 +92,7 @@ public class EventRegistrationServiceImpl implements IEventRegistrationService {
     @Override
     @Transactional
     public EventRegistrationResponse cancelOwnRegistration(UUID attendeeId, UUID eventId) {
+        actorRolePolicy.requireBuyerOnly(attendeeId);
         BulletinPost event = bulletinRepository.readByIdForUpdate(eventId);
         if (event == null || event.getType() != BulletinPostType.EVENT) throw ResourceNotFoundException.of("Event");
         EventRegistration registration = registrationRepository.readByEventIdAndAttendeeId(eventId, attendeeId);
@@ -103,6 +110,7 @@ public class EventRegistrationServiceImpl implements IEventRegistrationService {
     @Override
     @Transactional(readOnly = true)
     public List<EventRegistrationResponse> listOwnRegistrations(UUID attendeeId) {
+        actorRolePolicy.requireBuyerOnly(attendeeId);
         return registrationRepository.readByAttendeeId(attendeeId).stream().map(registration -> {
             BulletinPost event = bulletinRepository.read(registration.getBulletinPostId());
             return event == null ? null : response(registration, event);
@@ -112,6 +120,7 @@ public class EventRegistrationServiceImpl implements IEventRegistrationService {
     @Override
     @Transactional(readOnly = true)
     public List<EventAttendeeResponse> listHostedAttendees(UUID hostId, UUID eventId) {
+        actorRolePolicy.requireBuyerOnly(hostId);
         BulletinPost event = ownedEvent(hostId, eventId);
         return registrationRepository.readByEventId(event.getId()).stream().map(registration -> {
             Integer position = registration.getStatus() == EventRegistrationStatus.WAITLISTED
@@ -124,6 +133,7 @@ public class EventRegistrationServiceImpl implements IEventRegistrationService {
     @Override
     @Transactional
     public void cancelHostedEvent(UUID hostId, UUID eventId, String reason) {
+        actorRolePolicy.requireBuyerOnly(hostId);
         BulletinPost event = bulletinRepository.readByIdForUpdate(eventId);
         if (event == null || !event.getAuthorId().equals(hostId) || event.getType() != BulletinPostType.EVENT) {
             throw ResourceNotFoundException.of("Event");

@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiError, apiRequest } from '../../js/api/client.js';
+import { useAuth } from '../auth/AuthContext.jsx';
 import DashboardShell from '../components/DashboardShell.jsx';
 import Icon from '../components/Icon.jsx';
 
 export default function VendorStatusPage() {
+  const auth = useAuth();
+  const isSeller = auth.hasRole('SELLER');
   const [profile, setProfile] = useState(null);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
@@ -39,11 +42,17 @@ export default function VendorStatusPage() {
     finally { setSubmitting(false); }
   };
 
-  return <DashboardShell role="BUYER" eyebrow="Vendor onboarding">
+  return <DashboardShell role={isSeller ? 'SELLER' : 'BUYER'} eyebrow="Vendor onboarding">
     {error && <div className="form-alert form-alert--error" role="alert">{error} {status === 'error' && <button type="button" onClick={() => load()}>Retry</button>}</div>}
     <section className="vendor-status-card" aria-busy={status === 'loading'}>
       {status === 'loading' && <p>Loading your persisted vendor profile…</p>}
-      {status === 'missing' && <>
+      {status === 'missing' && isSeller && <>
+        <span className="vendor-status-card__icon"><Icon name="store" size={25} /></span>
+        <h2>You are a verified vendor</h2>
+        <p>Your account already has seller access. You cannot submit another vendor application.</p>
+        <Link className="button button--dark" to="/seller">Open seller workspace</Link>
+      </>}
+      {status === 'missing' && !isSeller && <>
         <span className="vendor-status-card__icon"><Icon name="store" size={25} /></span>
         <h2>Become a verified vendor</h2>
         <p>Submit your local business for administrator review. Approval adds the SELLER role to your account and unlocks listing tools.</p>
@@ -58,7 +67,7 @@ export default function VendorStatusPage() {
         <span className={`vendor-status-card__status vendor-status-card__status--${profile.verificationStatus?.toLowerCase()}`}>{profile.verificationStatus}</span>
         <h2>{profile.businessName}</h2><p>{profile.description}</p>
         <dl><div><dt>Vendor type</dt><dd>{profile.vendorType?.replaceAll('_',' ')}</dd></div><div><dt>Submitted</dt><dd>{new Date(profile.submittedAt).toLocaleDateString('en-ZA')}</dd></div><div><dt>Review note</dt><dd>{profile.reviewNote || 'Awaiting administrator review'}</dd></div></dl>
-        {profile.verificationStatus === 'VERIFIED' ? <Link className="button button--dark" to="/seller">Open seller workspace</Link> : <p className="vendor-review-note">An administrator must approve this application. Sign in again after approval to receive a JWT containing SELLER.</p>}
+        {profile.verificationStatus === 'VERIFIED' ? (isSeller ? <><p className="vendor-review-note">You are a verified vendor. Your seller workspace is active.</p><Link className="button button--dark" to="/seller">Open seller workspace</Link></> : <p className="vendor-review-note">Your vendor application is approved. Sign in again to activate your seller workspace.</p>) : <p className="vendor-review-note">An administrator must approve this application. Sign in again after approval to receive a JWT containing SELLER.</p>}
       </>}
     </section>
   </DashboardShell>;

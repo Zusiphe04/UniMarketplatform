@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
-/** Complete editable-field replacement for a draft product. */
+/** Complete editable-field replacement for a seller-owned product. */
 public record UpdateProductRequest(
 
         @NotBlank(message = "Title is required")

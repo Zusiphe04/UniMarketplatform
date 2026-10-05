@@ -14,12 +14,12 @@ import TrustBar from '../components/TrustBar.jsx';
 
 const CATALOGUE_SIZE = 24;
 const CATEGORY_RAILS = [
-  { category: 'TECH', eyebrow: 'Devices & gadgets', title: 'Tech deals near you' },
-  { category: 'BOOKS', eyebrow: 'Study smarter', title: 'Textbooks & study guides' },
-  { category: 'ROOM_AND_HOME', eyebrow: 'Res & room', title: 'Room & home essentials' },
-  { category: 'CLOTHING', eyebrow: 'Campus style', title: 'Clothing & sneakers' },
+  { category: 'TECH', title: 'Tech deals near you' },
+  { category: 'BOOKS', title: 'Textbooks & study guides' },
+  { category: 'ROOM_AND_HOME', title: 'Room & home essentials' },
+  { category: 'CLOTHING', title: 'Clothing & sneakers' },
 ];
-const SERVICE_RAIL = { category: 'SERVICE', eyebrow: 'Book a local', title: 'Services from the community' };
+const SERVICE_RAIL = { category: 'SERVICE', title: 'Services from the community' };
 const FEATURED_TITLES = ['macbook air m1', 'campus hybrid bicycle', 'foldable lap desk', 'nike air force sneakers'];
 
 function selectHomepageListings(products, filtered) {
@@ -81,11 +81,10 @@ export default function HomePage() {
     />
     <CategorySection activeCategory={activeCategory} onSelect={selectCategory} />
     {showTrending && <ProductRail
-      eyebrow="Trending on campus"
       isLoading={catalogue.isLoading}
       products={trendingProducts}
       seeAllTo="/marketplace#listings"
-      title="Popular right now"
+      title="Trending on campus"
     />}
     <ProductSection
       activeCategory={activeCategory}
@@ -101,7 +100,6 @@ export default function HomePage() {
     {CATEGORY_RAILS.map((rail, index) => (
       <CatalogueRail
         category={rail.category}
-        eyebrow={rail.eyebrow}
         key={rail.category}
         seeAllTo={`/marketplace?category=${rail.category}#listings`}
         title={rail.title}
@@ -120,7 +118,6 @@ export default function HomePage() {
     />
     <CatalogueRail
       category={SERVICE_RAIL.category}
-      eyebrow={SERVICE_RAIL.eyebrow}
       seeAllTo={`/marketplace?category=${SERVICE_RAIL.category}#listings`}
       title={SERVICE_RAIL.title}
       tone="cream"

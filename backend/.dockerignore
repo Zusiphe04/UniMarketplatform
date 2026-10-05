@@ -1,0 +1,11 @@
+target
+build
+.gradle
+.idea
+.kiro
+bin
+uploads
+*.log
+.env
+.env.*
+!.env.example

@@ -23,6 +23,8 @@ public record ProductResponse(
         BigDecimal price,
         String currency,
         int quantity,
+        int stockQuantity,
+        int reservedQuantity,
         String brand,
         String model,
         String storage,
@@ -47,7 +49,7 @@ public record ProductResponse(
         return new ProductResponse(product.getId(), product.getSellerId(), seller, product.getTitle(),
                 product.getDescription(), ListingCategory.fromPersistenceCategory(product.getCategory()),
                 product.getCondition(), product.getPrice(), product.getCurrency(), product.getAvailableQuantity(),
-                product.getBrand(), product.getModel(), product.getStorage(), product.getMemory(),
+                product.getQuantity(), product.getReservedQuantity(), product.getBrand(), product.getModel(), product.getStorage(), product.getMemory(),
                 product.getProcessor(), product.getScreenSize(), product.getColor(), product.getSize(),
                 product.getStatus(), media, product.getPublishedAt(), product.getCreatedAt(),
                 product.getUpdatedAt());

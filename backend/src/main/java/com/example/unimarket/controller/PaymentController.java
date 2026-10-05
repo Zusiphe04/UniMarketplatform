@@ -22,7 +22,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/payments")
-@PreAuthorize("hasRole('BUYER') and !hasRole('ADMIN')")
+@PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
 public class PaymentController {
     private final ISimulatedPaymentService paymentService;
     public PaymentController(ISimulatedPaymentService paymentService) { this.paymentService = paymentService; }

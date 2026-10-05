@@ -20,6 +20,7 @@ import com.example.unimarket.repository.IUserAccountRepository;
 import com.example.unimarket.request.CheckoutRequest;
 import com.example.unimarket.response.OrderResponse;
 import com.example.unimarket.response.SellerOrderResponse;
+import com.example.unimarket.service.IActorRolePolicy;
 import com.example.unimarket.service.IInventoryReservationService;
 import com.example.unimarket.service.INotificationService;
 import com.example.unimarket.service.IOrderService;
@@ -46,19 +47,22 @@ public class OrderServiceImpl implements IOrderService {
     private final IUserAccountRepository accountRepository;
     private final INotificationService notificationService;
     private final IInventoryReservationService reservationService;
+    private final IActorRolePolicy actorRolePolicy;
 
     public OrderServiceImpl(ICartItemRepository cartRepository, IProductRepository productRepository,
                             IMarketplaceOrderRepository orderRepository, IOrderItemRepository orderItemRepository,
                             IUserAccountRepository accountRepository, INotificationService notificationService,
-                            IInventoryReservationService reservationService) {
+                            IInventoryReservationService reservationService, IActorRolePolicy actorRolePolicy) {
         this.cartRepository = cartRepository; this.productRepository = productRepository; this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository; this.accountRepository = accountRepository;
         this.notificationService = notificationService; this.reservationService = reservationService;
+        this.actorRolePolicy = actorRolePolicy;
     }
 
     @Override
     @Transactional
     public OrderResponse checkout(UUID buyerId, String idempotencyKey, CheckoutRequest request) {
+        actorRolePolicy.requireBuyerOnly(buyerId);
         String key = normalizedIdempotencyKey(idempotencyKey);
         String fingerprint = CheckoutRequestFingerprint.from(request);
         if (fingerprint == null) throw new ValidationException("The checkout details are invalid.");
@@ -114,6 +118,7 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     @Transactional
     public OrderResponse cancelBuyerOrder(UUID buyerId, UUID orderId) {
+        actorRolePolicy.requireBuyerOnly(buyerId);
         MarketplaceOrder order = orderRepository.readByIdForUpdate(orderId);
         if (order == null || !order.getBuyerId().equals(buyerId)) throw ResourceNotFoundException.of("Order");
         if (!order.cancel()) throw new ValidationException("Only an order awaiting payment can be cancelled.");
@@ -124,6 +129,7 @@ public class OrderServiceImpl implements IOrderService {
 
     @Override @Transactional(readOnly = true)
     public List<OrderResponse> listBuyerOrders(UUID buyerId) {
+        actorRolePolicy.requireBuyerOnly(buyerId);
         List<MarketplaceOrder> orders = orderRepository.readByBuyerId(buyerId);
         Map<UUID, List<OrderItem>> items = orderItemRepository.readByOrderIds(orders.stream().map(MarketplaceOrder::getId).toList())
                 .stream().collect(Collectors.groupingBy(OrderItem::getOrderId));
@@ -131,12 +137,14 @@ public class OrderServiceImpl implements IOrderService {
     }
     @Override @Transactional(readOnly = true)
     public OrderResponse getBuyerOrder(UUID buyerId, UUID orderId) {
+        actorRolePolicy.requireBuyerOnly(buyerId);
         MarketplaceOrder order = orderRepository.read(orderId);
         if (order == null || !order.getBuyerId().equals(buyerId)) throw ResourceNotFoundException.of("Order");
         return OrderResponse.from(order, orderItemRepository.readByOrderId(orderId));
     }
     @Override @Transactional(readOnly = true)
     public List<SellerOrderResponse> listSellerOrders(UUID sellerId) {
+        actorRolePolicy.requireSellerOnly(sellerId);
         Map<UUID, List<OrderItem>> groups = orderItemRepository.readBySellerId(sellerId).stream()
                 .collect(Collectors.groupingBy(OrderItem::getOrderId, LinkedHashMap::new, Collectors.toList()));
         return groups.entrySet().stream().map(entry -> SellerOrderResponse.from(orderRepository.read(entry.getKey()), entry.getValue())).toList();

@@ -35,6 +35,7 @@ import com.example.unimarket.repository.ISimulatedPaymentRepository;
 import com.example.unimarket.request.SimulatePaymentRequest;
 import com.example.unimarket.response.PaymentOptionResponse;
 import com.example.unimarket.response.SimulatedPaymentResponse;
+import com.example.unimarket.service.IActorRolePolicy;
 import com.example.unimarket.service.IEngagementService;
 import com.example.unimarket.service.IInventoryReservationService;
 import com.example.unimarket.service.INotificationService;
@@ -52,6 +53,7 @@ public class SimulatedPaymentServiceImpl implements ISimulatedPaymentService {
     private final INotificationService notificationService;
     private final IEngagementService engagementService;
     private final IOrderItemFulfillmentService fulfillmentService;
+    private final IActorRolePolicy actorRolePolicy;
     private final BigDecimal escrowThreshold;
 
     public SimulatedPaymentServiceImpl(ISimulatedPaymentRepository paymentRepository,
@@ -63,12 +65,13 @@ public class SimulatedPaymentServiceImpl implements ISimulatedPaymentService {
                                        INotificationService notificationService,
                                        IEngagementService engagementService,
                                        IOrderItemFulfillmentService fulfillmentService,
+                                       IActorRolePolicy actorRolePolicy,
                                        @Value("${unimarket.escrow.threshold-zar:5000.00}") BigDecimal escrowThreshold) {
         this.paymentRepository = paymentRepository; this.escrowRepository = escrowRepository;
         this.orderRepository = orderRepository; this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository; this.reservationService = reservationService;
         this.notificationService = notificationService; this.engagementService = engagementService;
-        this.fulfillmentService = fulfillmentService;
+        this.fulfillmentService = fulfillmentService; this.actorRolePolicy = actorRolePolicy;
         if (escrowThreshold == null || escrowThreshold.signum() <= 0) {
             throw new IllegalArgumentException("The simulated escrow threshold must be positive.");
         }
@@ -82,6 +85,7 @@ public class SimulatedPaymentServiceImpl implements ISimulatedPaymentService {
     @Override
     @Transactional(noRollbackFor = ReservationExpiredException.class)
     public SimulatedPaymentResponse simulate(UUID buyerId, String idempotencyKey, SimulatePaymentRequest request) {
+        actorRolePolicy.requireBuyerOnly(buyerId);
         String key = idempotencyKey == null ? null : idempotencyKey.trim();
         if (key == null || key.isBlank() || key.length() > 120) {
             throw new ValidationException("Idempotency-Key is required and must not exceed 120 characters.");
@@ -153,11 +157,13 @@ public class SimulatedPaymentServiceImpl implements ISimulatedPaymentService {
 
     @Override @Transactional(readOnly = true)
     public List<SimulatedPaymentResponse> list(UUID buyerId) {
+        actorRolePolicy.requireBuyerOnly(buyerId);
         return paymentRepository.readByBuyerId(buyerId).stream()
                 .map(payment -> SimulatedPaymentResponse.from(payment, orderRepository.read(payment.getOrderId()))).toList();
     }
     @Override @Transactional(readOnly = true)
     public SimulatedPaymentResponse get(UUID buyerId, UUID paymentId) {
+        actorRolePolicy.requireBuyerOnly(buyerId);
         SimulatedPayment payment = paymentRepository.read(paymentId);
         if (payment == null || !payment.getBuyerId().equals(buyerId)) throw ResourceNotFoundException.of("Payment");
         return SimulatedPaymentResponse.from(payment, orderRepository.read(payment.getOrderId()));

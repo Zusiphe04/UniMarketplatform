@@ -19,7 +19,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/checkout")
-@PreAuthorize("hasRole('BUYER') and !hasRole('ADMIN')")
+@PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
 public class CheckoutController {
     private final IOrderService orderService;
     public CheckoutController(IOrderService orderService) { this.orderService = orderService; }

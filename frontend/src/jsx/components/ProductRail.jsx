@@ -29,7 +29,6 @@ function RailSkeleton() {
  * pointer devices also get previous/next buttons.
  */
 export default function ProductRail({
-  eyebrow,
   title,
   products = [],
   isLoading = false,
@@ -71,7 +70,6 @@ export default function ProductRail({
     <section className={`product-rail product-rail--${tone}`} aria-labelledby={headingId}>
       <div className="container product-rail__heading">
         <div>
-          {eyebrow && <p className="eyebrow eyebrow--line">{eyebrow}</p>}
           <h2 id={headingId}>{title}</h2>
         </div>
         <div className="product-rail__actions">

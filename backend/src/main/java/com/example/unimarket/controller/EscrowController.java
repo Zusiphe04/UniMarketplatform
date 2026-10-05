@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/escrow/orders")
-@PreAuthorize("hasRole('BUYER') and !hasRole('ADMIN')")
+@PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
 public class EscrowController {
     private final IEscrowService escrowService;
 

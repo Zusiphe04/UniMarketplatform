@@ -67,7 +67,7 @@ public class ProductReviewController {
     }
 
     @PostMapping("/{reviewId}/response")
-    @PreAuthorize("hasRole('SELLER')")
+    @PreAuthorize("hasRole('SELLER') and !hasAnyRole('MODERATOR', 'ADMIN')")
     public ResponseEntity<ProductReviewResponse> respond(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID reviewId,

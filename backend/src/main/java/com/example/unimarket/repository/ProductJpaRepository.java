@@ -26,6 +26,8 @@ public interface ProductJpaRepository extends JpaRepository<Product, UUID> {
 
     Optional<Product> findByIdAndStatusIn(UUID id, Collection<ProductStatus> statuses);
 
+    Page<Product> findBySellerIdOrderByCreatedAtDesc(UUID sellerId, Pageable pageable);
+
     @Query("""
             select product
             from Product product

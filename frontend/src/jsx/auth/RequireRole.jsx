@@ -2,7 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { getDefaultRoute, hasAnyRole } from '../../js/auth/roles.js';
 import { useAuth } from './AuthContext.jsx';
 
-export default function RequireRole({ roles = [], excludedRoles = [], children }) {
+export default function RequireRole({ roles = [], excludedRoles = [], allowGuests = false, children }) {
   const auth = useAuth();
   const location = useLocation();
 
@@ -16,7 +16,7 @@ export default function RequireRole({ roles = [], excludedRoles = [], children }
   }
 
   if (!auth.isAuthenticated) {
-    return <Navigate to="/sign-in" replace state={{ from: location.pathname }} />;
+    return allowGuests ? children : <Navigate to="/sign-in" replace state={{ from: location.pathname }} />;
   }
 
   if (excludedRoles.length > 0 && hasAnyRole(auth.account, excludedRoles)) {

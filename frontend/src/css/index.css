@@ -1,19 +1,23 @@
 :root {
   --ink: #101b17;
-  --muted: #69716e;
+  --muted: #56605c;
   --green: #0b2119;
   --green-deep: #071a14;
   --green-soft: #153a2c;
-  --orange: #f05a22;
-  --orange-dark: #d94612;
+  --orange: #c94817;
+  --orange-dark: #9f310b;
   --cream: #f7f6f1;
   --paper: #ffffff;
-  --line: #e4e5df;
+  --line: #cbd1cd;
+  --control-line: #87938d;
+  --focus-ring: #7a2608;
   --shadow: 0 14px 38px rgba(11, 33, 25, 0.08);
   --container: 1180px;
+  --font-sans: "Aptos", "Segoe UI Variable Text", "Segoe UI", Inter, Arial, sans-serif;
+  --font-display: "Aptos Display", "Segoe UI Variable Display", "Segoe UI", Inter, Arial, sans-serif;
   color: var(--ink);
   background: var(--paper);
-  font-family: Inter, Avenir, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -100,7 +104,7 @@ h2 em {
 }
 
 :focus-visible {
-  outline: 3px solid rgba(240, 90, 34, 0.42);
+  outline: 3px solid var(--focus-ring);
   outline-offset: 3px;
 }
 

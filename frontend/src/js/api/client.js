@@ -74,6 +74,7 @@ export async function refreshSession() {
     }
     const payload = await parseResponse(response);
     setAccessToken(payload.accessToken);
+    window.dispatchEvent(new CustomEvent('unimarket:session-refreshed', { detail: payload.account }));
     return payload;
   })().finally(() => {
     refreshInFlight = null;

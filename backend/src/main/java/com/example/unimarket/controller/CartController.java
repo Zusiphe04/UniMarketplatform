@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/cart")
-@PreAuthorize("hasRole('BUYER') and !hasRole('ADMIN')")
+@PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
 public class CartController {
     private final ICartService cartService;
     public CartController(ICartService cartService) { this.cartService = cartService; }

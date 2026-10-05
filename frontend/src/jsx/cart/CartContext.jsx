@@ -30,7 +30,8 @@ function checkoutSignature(details, cart) {
 
 export function CartProvider({ children }) {
   const auth = useAuth();
-  const canPurchase = auth.isAuthenticated && hasRole(auth.account, 'BUYER') && !hasRole(auth.account, 'ADMIN');
+  const canPurchase = auth.isAuthenticated && hasRole(auth.account, 'BUYER')
+    && !hasRole(auth.account, 'SELLER') && !hasRole(auth.account, 'ADMIN');
   const roleKey = Array.isArray(auth.account?.roles) ? [...auth.account.roles].sort().join(',') : '';
   const identityKey = canPurchase ? `${auth.account?.id || 'buyer'}:${roleKey}` : '';
   const [cartState, setCartState] = useState(null);
@@ -87,7 +88,7 @@ export function CartProvider({ children }) {
 
   const enqueue = useCallback((work, { mutating = false } = {}) => {
     if (!eligibleRef.current) {
-      return Promise.reject(new ApiError('Administrator accounts cannot use buyer commerce.', 403));
+      return Promise.reject(new ApiError('This account cannot use buyer commerce.', 403));
     }
 
     const generation = generationRef.current;

@@ -16,6 +16,8 @@ public interface IProductService {
 
     ProductResponse getPublicProduct(UUID productId);
 
+    Page<ProductResponse> listOwnedProducts(UUID sellerId, int page, int size);
+
     ProductResponse createProduct(UUID sellerId, CreateProductRequest request);
 
     ProductResponse updateProduct(UUID sellerId, UUID productId, UpdateProductRequest request);

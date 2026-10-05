@@ -50,17 +50,17 @@ export default function App() {
       <Route path="about" element={<AboutPage />} />
       <Route path="sign-in" element={<SignInPage />} />
       <Route path="register" element={<RegisterPage />} />
-      <Route path="marketplace" element={<MarketplacePage />} />
-      <Route path="community" element={<RequireRole><CommunityPage /></RequireRole>} />
-      <Route path="products/:productId" element={<ProductDetailPage />} />
+      <Route path="marketplace" element={<RequireRole allowGuests excludedRoles={['SELLER', 'ADMIN']}><MarketplacePage /></RequireRole>} />
+      <Route path="community" element={<RequireRole roles={['BUYER']} excludedRoles={['SELLER', 'ADMIN']}><CommunityPage /></RequireRole>} />
+      <Route path="products/:productId" element={<RequireRole allowGuests excludedRoles={['SELLER', 'ADMIN']}><ProductDetailPage /></RequireRole>} />
       <Route path="notifications" element={<RequireRole><NotificationsPage /></RequireRole>} />
       <Route path="settings" element={<RequireRole><AccountSettingsPage /></RequireRole>} />
-      <Route path="buyer" element={<RequireRole roles={['BUYER']} excludedRoles={['ADMIN']}><BuyerDashboardPage /></RequireRole>} />
-      <Route path="cart" element={<RequireRole roles={['BUYER']} excludedRoles={['ADMIN']}><CartPage /></RequireRole>} />
-      <Route path="orders/:orderId" element={<RequireRole roles={['BUYER']} excludedRoles={['ADMIN']}><OrderDetailPage /></RequireRole>} />
-      <Route path="orders/:orderId/payment" element={<RequireRole roles={['BUYER']} excludedRoles={['ADMIN']}><OrderPaymentPage /></RequireRole>} />
-      <Route path="vendor-status" element={<RequireRole roles={['BUYER']}><VendorStatusPage /></RequireRole>} />
-      <Route path="seller" element={<RequireRole roles={['SELLER']}><SellerDashboardPage /></RequireRole>} />
+      <Route path="buyer" element={<RequireRole roles={['BUYER']} excludedRoles={['SELLER', 'ADMIN']}><BuyerDashboardPage /></RequireRole>} />
+      <Route path="cart" element={<RequireRole roles={['BUYER']} excludedRoles={['SELLER', 'ADMIN']}><CartPage /></RequireRole>} />
+      <Route path="orders/:orderId" element={<RequireRole roles={['BUYER']} excludedRoles={['SELLER', 'ADMIN']}><OrderDetailPage /></RequireRole>} />
+      <Route path="orders/:orderId/payment" element={<RequireRole roles={['BUYER']} excludedRoles={['SELLER', 'ADMIN']}><OrderPaymentPage /></RequireRole>} />
+      <Route path="vendor-status" element={<RequireRole roles={['BUYER', 'SELLER']} excludedRoles={['ADMIN']}><VendorStatusPage /></RequireRole>} />
+      <Route path="seller" element={<RequireRole roles={['SELLER']} excludedRoles={['MODERATOR', 'ADMIN']}><SellerDashboardPage /></RequireRole>} />
       <Route path="moderation" element={<RequireRole roles={['MODERATOR', 'ADMIN']}><ModeratorDashboardPage /></RequireRole>} />
       <Route path="admin" element={<RequireRole roles={['ADMIN']}><AdminDashboardPage /></RequireRole>} />
       <Route path="admin/accounts" element={<RequireRole roles={['ADMIN']}><AdminAccountGovernancePage /></RequireRole>} />

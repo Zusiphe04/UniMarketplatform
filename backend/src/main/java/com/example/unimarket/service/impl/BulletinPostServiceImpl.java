@@ -17,6 +17,7 @@ import com.example.unimarket.repository.IUserProfileRepository;
 import com.example.unimarket.request.CreateBulletinPostRequest;
 import com.example.unimarket.request.UpdateBulletinPostRequest;
 import com.example.unimarket.response.BulletinPostResponse;
+import com.example.unimarket.service.IActorRolePolicy;
 import com.example.unimarket.service.IBulletinPostService;
 import com.example.unimarket.service.IEngagementService;
 import org.springframework.data.domain.Page;
@@ -34,17 +35,20 @@ public class BulletinPostServiceImpl implements IBulletinPostService {
     private final IUserProfileRepository profileRepository;
     private final IEventRegistrationRepository registrationRepository;
     private final IEngagementService engagementService;
+    private final IActorRolePolicy actorRolePolicy;
 
     public BulletinPostServiceImpl(IBulletinPostRepository bulletinRepository,
                                    IUserAccountRepository accountRepository,
                                    IUserProfileRepository profileRepository,
                                    IEventRegistrationRepository registrationRepository,
-                                   IEngagementService engagementService) {
+                                   IEngagementService engagementService,
+                                   IActorRolePolicy actorRolePolicy) {
         this.bulletinRepository = bulletinRepository;
         this.accountRepository = accountRepository;
         this.profileRepository = profileRepository;
         this.registrationRepository = registrationRepository;
         this.engagementService = engagementService;
+        this.actorRolePolicy = actorRolePolicy;
     }
 
     @Override
@@ -72,12 +76,14 @@ public class BulletinPostServiceImpl implements IBulletinPostService {
     @Override
     @Transactional(readOnly = true)
     public Page<BulletinPostResponse> listOwn(UUID authorId, int page, int size) {
+        actorRolePolicy.requireBuyerOnly(authorId);
         return bulletinRepository.readByAuthorId(authorId, pageRequest(page, size)).map(this::response);
     }
 
     @Override
     @Transactional
     public BulletinPostResponse create(UUID authorId, CreateBulletinPostRequest request) {
+        actorRolePolicy.requireBuyerOnly(authorId);
         ensureActive(authorId);
         BulletinPost post = BulletinPostFactory.create(authorId, request.type(), request.title(), request.content(),
                 request.location(), request.coverImageUrl(), request.eventStartsAt(), request.eventCapacity(),
@@ -93,6 +99,7 @@ public class BulletinPostServiceImpl implements IBulletinPostService {
     @Override
     @Transactional
     public BulletinPostResponse update(UUID authorId, UUID postId, UpdateBulletinPostRequest request) {
+        actorRolePolicy.requireBuyerOnly(authorId);
         BulletinPost post = owned(authorId, postId);
         if (post.getType() == BulletinPostType.EVENT && post.getEventCapacity() != null
                 && request.eventCapacity() != null
@@ -111,6 +118,7 @@ public class BulletinPostServiceImpl implements IBulletinPostService {
     @Override
     @Transactional
     public BulletinPostResponse publish(UUID authorId, UUID postId) {
+        actorRolePolicy.requireBuyerOnly(authorId);
         BulletinPost post = BulletinPostFactory.publish(owned(authorId, postId));
         if (post == null) throw new ValidationException("Only an unexpired draft can be published.");
         BulletinPost saved = bulletinRepository.update(post);
@@ -121,6 +129,7 @@ public class BulletinPostServiceImpl implements IBulletinPostService {
     @Override
     @Transactional
     public BulletinPostResponse archive(UUID authorId, UUID postId) {
+        actorRolePolicy.requireBuyerOnly(authorId);
         BulletinPost post = BulletinPostFactory.archive(owned(authorId, postId));
         if (post == null) throw new ValidationException("This post cannot be archived.");
         return response(bulletinRepository.update(post));

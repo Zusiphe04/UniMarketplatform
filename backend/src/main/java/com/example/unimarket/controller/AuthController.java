@@ -37,14 +37,17 @@ public class AuthController {
     private final IAuthService authService;
     private final String refreshCookieName;
     private final boolean refreshCookieSecure;
+    private final String refreshCookieSameSite;
 
     public AuthController(
             IAuthService authService,
             @Value("${unimarket.security.refresh-cookie-name}") String refreshCookieName,
-            @Value("${unimarket.security.refresh-cookie-secure}") boolean refreshCookieSecure) {
+            @Value("${unimarket.security.refresh-cookie-secure}") boolean refreshCookieSecure,
+            @Value("${unimarket.security.refresh-cookie-same-site}") String refreshCookieSameSite) {
         this.authService = authService;
         this.refreshCookieName = refreshCookieName;
         this.refreshCookieSecure = refreshCookieSecure;
+        this.refreshCookieSameSite = refreshCookieSameSite;
     }
 
     @PostMapping("/register")
@@ -135,7 +138,7 @@ public class AuthController {
         return ResponseCookie.from(refreshCookieName, value)
                 .httpOnly(true)
                 .secure(refreshCookieSecure)
-                .sameSite("Strict")
+                .sameSite(refreshCookieSameSite)
                 .path("/api/v1/auth");
     }
 }

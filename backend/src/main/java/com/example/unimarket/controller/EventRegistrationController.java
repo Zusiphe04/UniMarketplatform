@@ -25,7 +25,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/events")
-@PreAuthorize("isAuthenticated()")
+@PreAuthorize("hasRole('BUYER') and !hasAnyRole('SELLER', 'ADMIN')")
 public class EventRegistrationController {
     private final IEventRegistrationService eventService;
     public EventRegistrationController(IEventRegistrationService eventService) { this.eventService = eventService; }

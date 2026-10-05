@@ -2,6 +2,7 @@ package com.example.unimarket.controller;
 
 import com.example.unimarket.domain.enums.CommunityPersona;
 import com.example.unimarket.domain.enums.Role;
+import com.example.unimarket.exception.ValidationException;
 import com.example.unimarket.request.GrantRoleRequest;
 import com.example.unimarket.request.UpdateAccountStatusRequest;
 import com.example.unimarket.response.AccountResponse;
@@ -90,7 +91,9 @@ public class AdminAccountController {
     public ResponseEntity<MessageResponse> grantRole(@AuthenticationPrincipal Jwt jwt,
                                                      @PathVariable UUID accountId,
                                                      @Valid @RequestBody GrantRoleRequest request) {
-
+        if (request.role() == Role.SELLER) {
+            throw new ValidationException("Seller access is granted only by approving a vendor application.");
+        }
         boolean granted = roleService.grant(accountId, request.role(), currentUserId(jwt));
 
         return granted

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiRequest } from '../../js/api/client.js';
 import DashboardShell from '../components/DashboardShell.jsx';
 
-const ROLES = ['BUYER', 'SELLER', 'MODERATOR', 'ADMIN'];
+const ROLES = ['BUYER', 'MODERATOR', 'ADMIN'];
 const STATUSES = ['PENDING_EMAIL', 'ACTIVE', 'LOCKED', 'SUSPENDED', 'CLOSED'];
 const PERSONAS = ['STUDENT', 'FACULTY', 'RESIDENT'];
 

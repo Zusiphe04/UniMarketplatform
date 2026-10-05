@@ -77,14 +77,16 @@ public class Product extends AuditableEntity {
     public ProductStatus getStatus() { return status; }
     public Instant getPublishedAt() { return publishedAt; }
 
-    /** Applies seller-managed fields while the product is still a draft. */
+    /** Applies seller-managed fields to a draft or live product when no stock is reserved. */
     public boolean updateDetails(String title, String description, ProductCategory category, ProductCondition condition,
                                  BigDecimal price, int quantity, String brand, String model, String storage,
                                  String memory, String processor, String screenSize, String color, String size) {
-        if (status != ProductStatus.DRAFT || reservedQuantity != 0) return false;
+        if (status == ProductStatus.ARCHIVED || reservedQuantity != 0) return false;
         this.title = title; this.description = description; this.category = category; this.condition = condition;
         this.price = price; this.quantity = quantity; this.brand = brand; this.model = model; this.storage = storage;
         this.memory = memory; this.processor = processor; this.screenSize = screenSize; this.color = color; this.size = size;
+        if (status == ProductStatus.PUBLISHED && quantity == 0) status = ProductStatus.SOLD_OUT;
+        else if (status == ProductStatus.SOLD_OUT && quantity > 0) status = ProductStatus.PUBLISHED;
         return true;
     }
 
