@@ -21,7 +21,7 @@ public final class ProductionDatabaseGuard {
         String database = databaseName(databaseUrl);
         if (database == null || SYSTEM_DATABASES.contains(database.toLowerCase(Locale.ROOT))) {
             throw new IllegalStateException("Production DB_URL must include a dedicated application database and must not target a TiDB/MySQL system database. "
-                    + "Create community_store, then use jdbc:mysql://<host>:<port>/community_store?... Current database: "
+                    + "Create unimarket, then use jdbc:mysql://<host>:<port>/unimarket?... Current database: "
                     + (database == null ? "<missing>" : database));
         }
     }

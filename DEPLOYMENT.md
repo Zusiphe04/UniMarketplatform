@@ -10,14 +10,14 @@ This repository is prepared for the following production topology:
 ## 1. Create the TiDB Cloud database
 
 1. Create a TiDB Cloud Starter, Essential, or Dedicated cluster.
-2. Create a database named `community_store` and an application user with access only to that database.
+2. Create a database named `unimarket` and an application user with access only to that database.
 3. In TiDB Cloud, open **Connect**, select a public connection, and copy the host, port, username, and password.
 4. Use TLS verification. TiDB is MySQL-compatible and supports MySQL Connector/J ([TiDB JDBC guide](https://docs.pingcap.com/tidbcloud/dev-guide-sample-application-java-jdbc)); secure TiDB Cloud connections should use TLS ([TiDB TLS guide](https://docs.pingcap.com/tidbcloud/secure-connections-to-serverless-clusters)).
 
 Example Render variables—replace every placeholder with the values from TiDB's Connect dialog:
 
 ```text
-DB_URL=jdbc:mysql://<tidb-host>:4000/community_store?sslMode=VERIFY_IDENTITY&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=UTC
+DB_URL=jdbc:mysql://<tidb-host>:4000/unimarket?sslMode=VERIFY_IDENTITY&enabledTLSProtocols=TLSv1.2,TLSv1.3&serverTimezone=UTC
 DB_USERNAME=<tidb-user>
 DB_PASSWORD=<tidb-password>
 ```
