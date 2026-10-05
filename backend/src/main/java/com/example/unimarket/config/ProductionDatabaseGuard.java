@@ -1,12 +1,10 @@
 package com.example.unimarket.config;
 
 import java.util.Locale;
-import java.util.Set;
 
-/** Rejects production startup when the JDBC URL targets a MySQL/TiDB system database. */
+/** Validates deployment-critical database environment before Spring starts. */
 public final class ProductionDatabaseGuard {
-    private static final Set<String> SYSTEM_DATABASES = Set.of(
-            "information_schema", "mysql", "performance_schema", "sys");
+    private static final String EXPECTED_DATABASE = "unimarket";
 
     private ProductionDatabaseGuard() { }
 
@@ -17,11 +15,25 @@ public final class ProductionDatabaseGuard {
             return;
         }
 
-        String databaseUrl = System.getenv("DB_URL");
+        String databaseUrl = required("DB_URL");
+        required("DB_USERNAME");
+        required("DB_PASSWORD");
+        required("UNIMARKET_JWT_SECRET");
+        required("JWT_ISSUER");
+        required("FRONTEND_ORIGINS");
+        String ddlMode = required("JPA_DDL_AUTO");
+        if (!"update".equalsIgnoreCase(ddlMode) && !"validate".equalsIgnoreCase(ddlMode)) {
+            throw new IllegalStateException("Production JPA_DDL_AUTO must be 'update' for the first schema boot or 'validate' afterwards.");
+        }
+
+        if (!databaseUrl.equals(databaseUrl.trim()) || databaseUrl.indexOf('"') >= 0
+                || databaseUrl.indexOf('\'') >= 0) {
+            throw new IllegalStateException("Production DB_URL must not contain surrounding whitespace or quotes.");
+        }
         String database = databaseName(databaseUrl);
-        if (database == null || SYSTEM_DATABASES.contains(database.toLowerCase(Locale.ROOT))) {
-            throw new IllegalStateException("Production DB_URL must include a dedicated application database and must not target a TiDB/MySQL system database. "
-                    + "Create unimarket, then use jdbc:mysql://<host>:<port>/unimarket?... Current database: "
+        if (database == null || !EXPECTED_DATABASE.equals(database.toLowerCase(Locale.ROOT))) {
+            throw new IllegalStateException("Production DB_URL must target the dedicated 'unimarket' database. "
+                    + "Use jdbc:mysql://<TiDB-host>:4000/unimarket?... Current database: "
                     + (database == null ? "<missing>" : database));
         }
     }
@@ -35,5 +47,13 @@ public final class ProductionDatabaseGuard {
         String database = databaseUrl.substring(pathStart + 1,
                 queryStart < 0 ? databaseUrl.length() : queryStart).trim();
         return database.isEmpty() ? null : database;
+    }
+
+    private static String required(String name) {
+        String value = System.getenv(name);
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException("Production environment variable " + name + " is required.");
+        }
+        return value;
     }
 }

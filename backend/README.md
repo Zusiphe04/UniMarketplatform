@@ -11,7 +11,7 @@ UniMarket is a Java 21/Spring Boot/MySQL API for a campus-community marketplace 
 - Builder entities, validated factories, repository abstractions/adapters, transactional services, and REST controllers
 - React-compatible JSON and RFC Problem Detail errors
 
-Registration creates an immediately active account with `BUYER`. Roles authorize behavior; personas describe identity and trust. Approved vendor profiles receive `SELLER`. The opt-in bootstrap administrator receives `BUYER`, `SELLER`, `MODERATOR`, and `ADMIN`.
+Registration creates an immediately active account with `BUYER`. Roles authorize behavior; personas describe identity and trust. Approved vendor profiles receive `SELLER`. The opt-in bootstrap administrator receives `BUYER`, `MODERATOR`, and `ADMIN`.
 
 ## Implemented API areas
 
@@ -86,7 +86,7 @@ The product API exposes the canonical listing categories `BOOKS`, `TECH`, `CLOTH
 
 - `spring.jpa.hibernate.ddl-auto=update` is a local-development convenience. Production should use versioned migrations and `validate`.
 - Escrow and payment providers are simulations only; no real funds are held, captured, released, or refunded.
-- Product images are external HTTP(S) URL metadata; multipart/binary upload and storage-provider integration are not configured in this backend.
+- Product images support permanent external HTTP(S) URL metadata and validated multipart uploads. Render deployments must keep `UNIMARKET_MEDIA_UPLOAD_DIR` on a persistent disk or replace local storage with object storage.
 - A simulated escrow refund intentionally does not restock inventory automatically.
 - CORS origins come from `FRONTEND_ORIGINS` and must be explicit when credentials are enabled.
 

@@ -62,7 +62,7 @@ export default function ApiStartupGate({ children }) {
       try {
         const response = await fetch(healthUrl, {
           headers: { Accept: 'application/json' },
-          credentials: 'include',
+          credentials: 'omit',
           cache: 'no-store',
           signal: controller.signal,
         });

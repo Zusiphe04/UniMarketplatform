@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
+import java.util.Locale;
 import java.util.UUID;
 
 /** Ecommerce-style registration and JWT authentication endpoints. */
@@ -47,7 +48,7 @@ public class AuthController {
         this.authService = authService;
         this.refreshCookieName = refreshCookieName;
         this.refreshCookieSecure = refreshCookieSecure;
-        this.refreshCookieSameSite = refreshCookieSameSite;
+        this.refreshCookieSameSite = normalizeSameSite(refreshCookieSameSite, refreshCookieSecure);
     }
 
     @PostMapping("/register")
@@ -132,6 +133,20 @@ public class AuthController {
 
     private ResponseCookie expiredRefreshCookie() {
         return baseCookie("").maxAge(Duration.ZERO).build();
+    }
+
+    private String normalizeSameSite(String value, boolean secure) {
+        String normalized = value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+        String sameSite = switch (normalized) {
+            case "strict" -> "Strict";
+            case "lax" -> "Lax";
+            case "none" -> "None";
+            default -> throw new IllegalStateException("Refresh cookie SameSite must be Strict, Lax, or None.");
+        };
+        if ("None".equals(sameSite) && !secure) {
+            throw new IllegalStateException("A SameSite=None refresh cookie must also be Secure.");
+        }
+        return sameSite;
     }
 
     private ResponseCookie.ResponseCookieBuilder baseCookie(String value) {

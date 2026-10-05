@@ -1,5 +1,6 @@
 package com.example.unimarket.config;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -15,37 +16,23 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(
             @Value("${unimarket.security.allowed-origins}") List<String> allowedOrigins) {
-        CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration application = new CorsConfiguration();
+        application.setAllowedOrigins(allowedOrigins.stream().map(String::trim).filter(value -> !value.isEmpty()).toList());
+        application.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        application.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Idempotency-Key"));
+        application.setAllowCredentials(true);
+        application.setMaxAge(Duration.ofHours(1));
 
-        configuration.setAllowedOrigins(allowedOrigins);
+        CorsConfiguration health = new CorsConfiguration();
+        health.setAllowedOrigins(List.of("*"));
+        health.setAllowedMethods(List.of("GET", "OPTIONS"));
+        health.setAllowedHeaders(List.of("Accept"));
+        health.setAllowCredentials(false);
+        health.setMaxAge(Duration.ofHours(1));
 
-        configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "PATCH",
-                        "OPTIONS"
-                )
-        );
-
-        configuration.setAllowedHeaders(
-                List.of(
-                        "Authorization",
-                        "Content-Type",
-                        "Accept",
-                        "Idempotency-Key"
-                )
-        );
-
-        configuration.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
-
-        source.registerCorsConfiguration("/**", configuration);
-
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/actuator/health", health);
+        source.registerCorsConfiguration("/**", application);
         return source;
     }
 }

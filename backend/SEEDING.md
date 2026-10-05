@@ -12,7 +12,7 @@ Run the files in this order:
 | 1 | [`01_users_and_auth.http`](http/seeding/01_users_and_auth.http) | Administrator login; seller, student, faculty, resident, and buyer accounts; profiles and personas |
 | 2 | [`02_vendor_approval.http`](http/seeding/02_vendor_approval.http) | Vendor application, administrator approval, and fresh seller JWT |
 | 3 | [`03_product_listings.http`](http/seeding/03_product_listings.http) | Textbook/laptop listings, image URLs, publication, and public reads |
-| 3a (optional) | [`03_frontend_catalogue.http`](http/seeding/03_frontend_catalogue.http) | Auto-captured full 19-item frontend catalogue using the supplied Vite-served product and service images |
+| 3a (optional) | [`03_frontend_catalogue.http`](http/seeding/03_frontend_catalogue.http) | Auto-captured full 24-item frontend catalogue using the supplied Vite-served product and service images |
 | 4 | [`04_reports_moderation.http`](http/seeding/04_reports_moderation.http) | Product report and moderation while the laptop is still publicly visible |
 | 5 | [`05_events_bulletin.http`](http/seeding/05_events_bulletin.http) | Resident-created campus event and public bulletin reads |
 | 6 | [`06_cart_checkout.http`](http/seeding/06_cart_checkout.http) | Cart, pickup checkout, delivery checkout, and three pending order UUIDs |
@@ -22,7 +22,7 @@ Run the files in this order:
 | 10 | [`10_engagement.http`](http/seeding/10_engagement.http) | Points, badges, ledger, and leaderboards |
 | 11 | [`11_notifications_sessions.http`](http/seeding/11_notifications_sessions.http) | Notifications, refresh rotation, session revocation, password restore, and logout-all |
 
-After all HTTP workflows, run [`scripts/verify-seed-data.sql`](scripts/verify-seed-data.sql) in MySQL Workbench. It uses read-only `SELECT` queries to inspect all 19 mapped tables. The script also includes a separate 19-item image-coverage query for the optional frontend catalogue.
+After all HTTP workflows, run [`scripts/verify-seed-data.sql`](scripts/verify-seed-data.sql) in MySQL Workbench. It uses read-only `SELECT` queries to inspect all 22 mapped tables. The script also includes a separate 24-item image-coverage query for the optional frontend catalogue.
 
 ## 1. Prerequisites
 
@@ -88,7 +88,7 @@ Port `8081` is not configured unless `server.port` is explicitly overridden.
 The two frontend-focused files are safe to run top-to-bottom without manually editing generated values:
 
 - `00_frontend_platform_users.http` asserts and captures the required access tokens and account IDs with `client.test` and `client.global.set`.
-- `03_frontend_catalogue.http` logs in the already-approved platform seller, captures its access token, and captures each of the 19 product IDs before the matching image and publish requests.
+- `03_frontend_catalogue.http` logs in the already-approved platform seller, captures its access token, and captures each of the 24 product IDs before the matching image and publish requests.
 
 Run each frontend-focused file in one IntelliJ HTTP Client session so its `client.global` values remain available to subsequent requests. The files remain intentionally non-idempotent: running registrations or product creates again against the same data will fail or create duplicates.
 
@@ -144,7 +144,7 @@ After all 11 legacy files are completed in order:
 - one textbook cart row remains for direct `cart_item` verification;
 - no active buyer refresh session remains after logout-all.
 
-After the optional frontend catalogue file, the platform seller should have 19 products, 19 products with images, 19 primary images, and 19 image rows.
+After the optional frontend catalogue file, the platform seller should have 24 products, 24 products with images, 24 primary images, and 24 image rows.
 
 ## 7. Correct payment contract
 
@@ -203,9 +203,9 @@ Example technology payload fragment:
 
 ## 8. Product image URL workflow
 
-Each `product_image` row stores URL metadata—URL, alt text, display order, and primary flag—not image binary data. The backend does not provide multipart binary upload or serve the frontend's local files.
+The backend accepts both permanent external image URLs and validated multipart uploads. Each `product_image` row stores URL metadata—URL, alt text, display order, and primary flag—while uploaded binary files are served from the configured media directory.
 
-All 19 image files referenced by `03_frontend_catalogue.http` exist under the repository's `frontend/public/images` tree. Vite exposes that tree from `http://localhost:5173`, so Vite and that local origin must be reachable from the browser while browsing seeded products. Stopping Vite does not remove the database rows, but the stored localhost URLs will no longer render. For deployed environments, replace `@frontendUrl` with a reachable public frontend or CDN origin before seeding.
+All 24 image files referenced by `03_frontend_catalogue.http` exist under the repository's `frontend/public/images` tree. Vite exposes that tree from `http://localhost:5173`, so Vite and that local origin must be reachable from the browser while browsing seeded products. Stopping Vite does not remove the database rows, but the stored localhost URLs will no longer render. For deployed environments, replace `@frontendUrl` with a reachable public frontend or CDN origin before seeding.
 
 For other frontend-created products:
 
@@ -232,13 +232,13 @@ The URL is stored in `product_image.image_url`. Public product list/detail respo
 
 Open [`scripts/verify-seed-data.sql`](scripts/verify-seed-data.sql) in MySQL Workbench after completing file 11. The script contains no data mutation and verifies:
 
-- all 19 mapped tables and row counts;
+- all 22 mapped tables and row counts;
 - accounts, profiles, roles, personas, academic qualification/year fields, and vendor approval;
 - products, distinct image URLs, inventory, and retained cart data;
 - three orders, four payment attempts, and two escrows;
 - review/response, event, points, badges, report, notifications, and sessions;
 - expected totals in a final one-row acceptance checklist;
-- optional frontend-catalogue image coverage for `seller.platform@unimarket.local` (expected `19/19/19/19` after file 03).
+- optional frontend-catalogue image coverage for `seller.platform@unimarket.local` (expected `24/24/24/24` after file 03).
 
 ## Frontend integration notes
 

@@ -10,8 +10,9 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 RUN groupadd --system communitystore && useradd --system --gid communitystore communitystore \
     && mkdir -p /var/data/uploads && chown -R communitystore:communitystore /app /var/data/uploads
-COPY --from=build /workspace/target/UniMarket-0.0.1-SNAPSHOT.jar /app/community-store-api.jar
-USER communitystore
+COPY --from=build /workspace/target/UniMarket-*.jar /app/community-store-api.jar
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 EXPOSE 10000
 ENV PORT=10000
-ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS:-} -jar /app/community-store-api.jar"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

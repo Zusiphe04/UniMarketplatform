@@ -84,7 +84,6 @@ public class AdminBootstrapRunner implements ApplicationRunner {
         roleService.grantDefaultRole(account.getId());
         roleService.grant(account.getId(), Role.ADMIN, account.getId());
         roleService.grant(account.getId(), Role.MODERATOR, account.getId());
-        roleService.grant(account.getId(), Role.SELLER, account.getId());
         LOGGER.info("Bootstrap administrator is ready for account {}.", account.getId());
     }
 }

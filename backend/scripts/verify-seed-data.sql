@@ -4,7 +4,7 @@
 
 USE unimarket;
 
--- 1. Confirm all 19 mapped persistence tables exist.
+-- 1. Confirm all 22 mapped persistence tables exist.
 SELECT table_name
 FROM information_schema.tables
 WHERE table_schema = DATABASE()
@@ -181,7 +181,7 @@ ORDER BY p.title, pi.display_order;
 
 -- 7a. Optional frontend catalogue image coverage. After completing
 -- 03_frontend_catalogue.http on a fresh database, the first query should report
--- 19/19/19/19 and the second query should return no rows.
+-- 24/24/24/24 and the second query should return no rows.
 SELECT
     COUNT(DISTINCT p.id) AS published_product_count,
     COUNT(DISTINCT CASE WHEN pi.id IS NOT NULL THEN p.id END) AS products_with_images,

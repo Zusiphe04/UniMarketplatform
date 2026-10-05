@@ -32,7 +32,7 @@ services:
       - key: REFRESH_COOKIE_SAME_SITE
         value: None
       - key: JPA_DDL_AUTO
-        value: update
+        sync: false
       - key: DB_POOL_MAX_SIZE
         value: 5
       - key: DB_INITIALIZATION_FAIL_TIMEOUT_MS
@@ -41,6 +41,16 @@ services:
         value: 5000
       - key: UNIMARKET_MEDIA_UPLOAD_DIR
         value: /var/data/uploads
+      - key: UNIMARKET_BOOTSTRAP_ADMIN_ENABLED
+        value: false
+      - key: UNIMARKET_ADMIN_EMAIL
+        sync: false
+      - key: UNIMARKET_ADMIN_PASSWORD
+        sync: false
+      - key: UNIMARKET_ADMIN_FIRST_NAME
+        value: Platform
+      - key: UNIMARKET_ADMIN_LAST_NAME
+        value: Administrator
       - key: JAVA_OPTS
         value: -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC
     disk:
